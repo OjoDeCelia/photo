@@ -105,6 +105,9 @@
   /* accueil */
   .hero-pv{display:block;max-width:100%;max-height:220px;background:#e4e1da;margin-top:4px}
   .hero-pv.none{width:100%;height:120px}
+  .cov-pv{display:block;width:120px;aspect-ratio:282/502;object-fit:cover;background:#e4e1da;margin:4px 0 0}
+  .cov-box input[type=range]{display:block;width:100%;max-width:260px;margin:4px 0 0;accent-color:var(--fg)}
+  .cov-box label.f{margin-top:12px}
   .grid.hero-hist{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
   .hero-hist .im{aspect-ratio:16/9}
   .adm .hero-hist .tile .tb{grid-template-columns:1fr auto}
@@ -197,11 +200,11 @@
 
   <!-- ÉDITION -->
   <section id="editor" class="hidden">
-    <h2>Categorías y proyectos</h2>
-    <p class="lead" style="margin-bottom:18px">Haz clic en una categoría y luego en un proyecto para editarlo. Los textos se editan haciendo clic sobre ellos. No se aplica nada hasta pulsar «Guardar».</p>
+    <h2>Colecciones y proyectos</h2>
+    <p class="lead" style="margin-bottom:18px">Haz clic en una colección y luego en un proyecto para editarlo. Los textos se editan haciendo clic sobre ellos. No se aplica nada hasta pulsar «Guardar».</p>
     <div id="catList"></div>
     <div class="add-row">
-      <input id="newCat" type="text" placeholder="Nueva categoría" autocomplete="off" aria-label="Nombre de la nueva categoría">
+      <input id="newCat" type="text" placeholder="Nueva colección" autocomplete="off" aria-label="Nombre de la nueva colección">
       <button id="addCat" class="sm" type="button">Añadir</button>
     </div>
 
@@ -213,6 +216,9 @@
         <div id="heroTitle"></div>
         <label class="f">Foto grande</label>
         <div id="heroImg"></div>
+        <label class="f">Título del bloque de colecciones</label>
+        <p class="ph-note" style="margin:0">El bloque de fotos que aparece bajo la foto grande (también da nombre al enlace del menú).</p>
+        <div id="collTitle"></div>
       </div>
     </details>
 
@@ -319,8 +325,10 @@
   const photoPaths = d => {                // toutes les photos du site, grande photo d'accueil comprise
     const s = new Set(allProjects(d).flatMap(p => p.photos.map(n => `${p.folder}/${n}`)));
     heroAll(d).forEach(x => s.add(x));
+    coverPaths(d).forEach(x => s.add(x));
     return s;
   };
+  const coverPaths = d => d.categories.map(c => c.cover).filter(Boolean);   // photo de chaque colección (tarjetas del inicio)
   function heroAll(d) {                    // grande photo actuelle + anciennes gardées
     const hh = d.hero || {};
     return (hh.image ? [hh.image] : []).concat(Array.isArray(hh.history) ? hh.history : []);
@@ -534,14 +542,14 @@
     label = (label || "").trim();
     if (!label) return false;
     const used = new Set(work.categories.map(c => c.id.toLowerCase()));
-    const id = unique(slugify(label) || "categoria", used);
-    work.categories.push({ id, label, projects: [] });
+    const id = unique(slugify(label) || "coleccion", used);
+    work.categories.push({ id, label, cover: "", projects: [] });
     ui.cats.add(id); changed(); return true;
   }
   function deleteCategory(ci) {
     const c = work.categories[ci];
-    if (c.projects.length) { alert("Esta categoría aún contiene proyectos. Elimínalos o muévelos primero."); return; }
-    if (!confirm(`¿Eliminar la categoría «${c.label}»?`)) return;
+    if (c.projects.length) { alert("Esta colección aún contiene proyectos. Elimínalos o muévelos primero."); return; }
+    if (!confirm(`¿Eliminar la colección «${c.label}»?`)) return;
     work.categories.splice(ci, 1); changed();
   }
   function addProject(ci, title) {
@@ -968,8 +976,8 @@
           h("span", { class: "n", text: plural(cat.projects.length, "proyecto") })
         ]),
         handle,
-        btn("↑", "Subir la categoría", () => { swap(cats, ci, -1); changed(); }, ci === 0),
-        btn("↓", "Bajar la categoría", () => { swap(cats, ci, 1); changed(); }, ci === cats.length - 1)
+        btn("↑", "Subir la colección", () => { swap(cats, ci, -1); changed(); }, ci === 0),
+        btn("↓", "Bajar la colección", () => { swap(cats, ci, 1); changed(); }, ci === cats.length - 1)
       ]);
       if (handle) sortableSource(handle, cats, ci, head);
       sortableTarget(head, cats, ci);
@@ -977,9 +985,11 @@
 
       if (open) {
         const body = h("div", { class: "body" });
-        body.appendChild(h("label", { class: "f", text: "Nombre de la categoría" }));
-        body.appendChild(editable({ label: "nombre de la categoría", cls: "big", get: () => cat.label, set: v => { cat.label = v; }, onChange: changed, placeholder: "Nombre de la categoría" }));
-        body.appendChild(h("div", { class: "btns" }, [btn("Eliminar la categoría", "Eliminar la categoría", () => deleteCategory(ci), false, "danger")]));
+        body.appendChild(h("label", { class: "f", text: "Nombre de la colección" }));
+        body.appendChild(editable({ label: "nombre de la colección", cls: "big", get: () => cat.label, set: v => { cat.label = v; }, onChange: changed, placeholder: "Nombre de la colección" }));
+        body.appendChild(h("label", { class: "f", text: "Foto de la colección" }));
+        body.appendChild(coverBox(cat));
+        body.appendChild(h("div", { class: "btns" }, [btn("Eliminar la colección", "Eliminar la colección", () => deleteCategory(ci), false, "danger")]));
         card.appendChild(body);
 
         cat.projects.forEach((p, pi) => {
@@ -1012,7 +1022,7 @@
             const row = h("div", { class: "btns" });
             const others = cats.map((c, i) => ({ c, i })).filter(x => x.i !== ci);
             if (others.length) {
-              row.appendChild(h("select", { "aria-label": "Mover a otra categoría",
+              row.appendChild(h("select", { "aria-label": "Mover a otra colección",
                 onchange: e => { if (e.target.value !== "") moveProject(ci, pi, +e.target.value); } },
                 [h("option", { value: "", text: "Mover a…" })].concat(others.map(x => h("option", { value: String(x.i), text: x.c.label })))));
             }
@@ -1023,7 +1033,7 @@
           card.appendChild(sub);
         });
 
-        const input = h("input", { type: "text", placeholder: "Nuevo proyecto en esta categoría", autocomplete: "off", "aria-label": "Título del nuevo proyecto" });
+        const input = h("input", { type: "text", placeholder: "Nuevo proyecto en esta colección", autocomplete: "off", "aria-label": "Título del nuevo proyecto" });
         const add = () => { if (!addProject(ci, input.value)) input.focus(); };
         input.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); add(); } });
         card.appendChild(h("div", { class: "body" }, [h("div", { class: "add-row" }, [input, btn("Añadir", "Añadir el proyecto", add)])]));
@@ -1038,6 +1048,69 @@
       set: v => { work.hero = Object.assign({}, work.hero, { title: v }); },
       onChange: updateSave, placeholder: "Sin texto (haz clic para añadir)" }));
     $("heroImg").replaceChildren(heroSection());
+    $("collTitle").replaceChildren(editable({ label: "título del bloque de colecciones", cls: "big",
+      get: () => (work.collections && typeof work.collections.title === "string") ? work.collections.title : "Colecciones",
+      set: v => { work.collections = Object.assign({}, work.collections, { title: v }); },
+      onChange: updateSave, placeholder: "Colecciones" }));
+  }
+
+  /* ---------- photo de chaque colección (tarjetas verticales del inicio) ---------- */
+  const COV_DIR = "colecciones";           // colecciones/NOM.jpg (+ thumbs/ et medium/ comme les autres photos)
+  const covSrc = path => previews.get(path) || encodeURI(repoFiles.has(thumbOfPath(path)) ? thumbOfPath(path) : path);
+  const focusOf = c => { const m = /^([\d.]+)% ([\d.]+)%$/.exec(c.focus || ""); return m ? [+m[1], +m[2]] : [50, 50]; };
+  function coverBox(cat) {
+    const cur = cat.cover, pend = cur && pending.get(cur);
+    const input = h("input", { type: "file", accept: "image/*", class: "hidden", "aria-label": "Elegir la foto de la colección" });
+    input.addEventListener("change", () => { replaceCatCover(cat, input.files[0]); input.value = ""; });
+    const [fx, fy] = focusOf(cat);
+    const pic = cur ? h("img", { class: "cov-pv", alt: "Foto de la colección", src: covSrc(cur), style: `object-position:${fx}% ${fy}%` })
+                    : h("div", { class: "cov-pv none" });
+    const box = h("div", { class: "cov-box" }, [pic, input,
+      h("div", { class: "meta", text: cur ? `Archivo: ${cur}${pend ? ` · ${fmt(pend.blob.size)} (nueva, aún sin guardar)` : ""}` : "Sin foto" })]);
+    if (cur) {
+      const slider = (label, idx) => {
+        const inp = h("input", { type: "range", min: "0", max: "100", value: String(idx ? fy : fx), "aria-label": label });
+        inp.addEventListener("input", () => {
+          const f = focusOf(cat); f[idx] = +inp.value;
+          cat.focus = `${f[0]}% ${f[1]}%`; pic.style.objectPosition = cat.focus;
+          updateSave(); say($("saveMsg"), "");
+        });
+        return [h("label", { class: "f", text: label }), inp];
+      };
+      slider("Encuadre horizontal", 0).concat(slider("Encuadre vertical", 1)).forEach(n => box.appendChild(n));
+    }
+    box.appendChild(h("div", { class: "btns", style: "margin-top:12px" }, [
+      btn(cur ? "Cambiar la foto" : "Elegir la foto", "Cambiar la foto de la colección", () => input.click()),
+      cur ? btn("Quitar la foto", "Quitar la foto de la colección", () => removeCatCover(cat), false, "danger") : null
+    ]));
+    box.appendChild(h("p", { class: "ph-note", text: `Se muestra en vertical en el inicio (la foto se recorta): usa el encuadre para elegir qué parte se ve. La foto se comprime (${MAX_SIDE} px como máximo), se crea una versión móvil y todo se guarda en la carpeta ${COV_DIR}/. Se eliminan los metadatos (incluido el GPS).` }));
+    return box;
+  }
+  function removeCatCover(cat) {
+    if (!cat.cover) return;
+    if (pending.has(cat.cover)) forgetLocal(cat.cover);   // jamás publicada : se olvida sin más
+    cat.cover = ""; delete cat.focus; changed();          // ya publicada : se borra del repositorio al guardar
+  }
+  async function replaceCatCover(cat, file) {
+    if (!file || busy) return;
+    busy = true; updateSave(); say($("saveMsg"), "Comprimiendo la foto…");
+    let path = null;
+    try {
+      const blob = await resizeImpl(file, MAX_SIDE, QUALITY);
+      path = `${COV_DIR}/${stamp()}-${Math.random().toString(36).slice(2, 5).padEnd(3, "0")}.jpg`;
+      pending.set(path, { blob });
+      let mb = null;
+      try { mb = await resizeImpl(blob, MED_SIDE, MED_Q); pendingThumbs.set(mediumOfPath(path), { blob: mb }); } catch (e) { /* sin versión móvil : el sitio usará la foto completa */ }
+      try { pendingThumbs.set(thumbOfPath(path), { blob: await resizeImpl(mb || blob, THUMB_SIDE, THUMB_Q) }); } catch (e) { /* sin miniatura : se mostrará la foto */ }
+      previews.set(path, URL.createObjectURL(blob));
+      if (cat.cover && pending.has(cat.cover)) forgetLocal(cat.cover);   // la anterior nunca se publicó : inútil conservarla
+      cat.cover = path; delete cat.focus;                                  // la anterior (ya publicada) se borra al guardar
+      busy = false; changed();
+      say($("saveMsg"), `Foto comprimida${file.size ? `: ${fmt(file.size)} → ${fmt(blob.size)}` : ""}${mb ? ` (versión móvil: ${fmt(mb.size)})` : ""}. Pulsa «Guardar» para publicarla.`, "ok");
+    } catch (e) {
+      if (path) forgetLocal(path);
+      busy = false; updateSave(); say($("saveMsg"), "Este formato de imagen no es compatible.", "err");
+    }
   }
 
   /* ---------- page d'accueil : grande photo ---------- */
@@ -1199,16 +1272,17 @@
     if (busy) return;
     const email = (work.about.email || "").trim();
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { say($("saveMsg"), "La dirección de correo no parece válida.", "err"); return; }
-    if (work.categories.some(c => !c.label.trim())) { say($("saveMsg"), "Una categoría no tiene nombre.", "err"); return; }
+    if (work.categories.some(c => !c.label.trim())) { say($("saveMsg"), "Una colección no tiene nombre.", "err"); return; }
     if (allProjects(work).some(p => !p.title.trim())) { say($("saveMsg"), "Un proyecto no tiene título.", "err"); return; }
 
     const keptFolders = folders(work), keptPaths = photoPaths(work);
     const delFolders = [...folders(saved.data)].filter(f => !keptFolders.has(f));
     const removedPhotos = [...photoPaths(saved.data)].filter(p => !keptPaths.has(p) && !delFolders.some(f => p.startsWith(f + "/")));
     const delPaths = removedPhotos.concat(removedPhotos.filter(x => x.includes("/")).flatMap(derivs));
-    const oldHeroes = new Set(heroAll(saved.data));
+    const oldHeroes = new Set(heroAll(saved.data)), oldCovers = new Set(coverPaths(saved.data));
     const heroGone = removedPhotos.filter(x => oldHeroes.has(x));
-    const removedCount = removedPhotos.length - heroGone.length;
+    const coverGone = removedPhotos.filter(x => oldCovers.has(x));
+    const removedCount = removedPhotos.length - heroGone.length - coverGone.length;
     const keptThumbs = new Set([...keptPaths].flatMap(derivs));
     const photoUploads = [...pending.entries()].filter(([path]) => keptPaths.has(path)).map(([path, v]) => ({ path, blob: v.blob }));
     const uploads = photoUploads.concat([...pendingThumbs.entries()].filter(([path]) => keptThumbs.has(path)).map(([path, v]) => ({ path, blob: v.blob })));
@@ -1217,6 +1291,7 @@
       const names = saved.data.categories.flatMap(c => c.projects).filter(p => delFolders.includes(p.folder)).map(p => `• proyecto «${p.title}» y todas sus fotos`);
       if (removedCount) names.push(`• ${plural(removedCount, "foto")} quitada${removedCount > 1 ? "s" : ""} de proyectos que se conservan`);
       heroGone.forEach(x => names.push(`• una foto anterior del inicio (${x})`));
+      coverGone.forEach(x => names.push(`• una foto anterior de una colección (${x})`));
       if (!confirm(`Estos elementos se eliminarán definitivamente:\n\n${names.join("\n")}\n\n¿Continuar?`)) return;
     }
 

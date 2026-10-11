@@ -86,42 +86,80 @@
   const LIGHT = window.matchMedia("(max-width: 900px)").matches || !!(navigator.connection && navigator.connection.saveData);   // mobile : versions allégées partout
   const cover = p => p.cover || p.photos[0];
 
-  /* ---------- ACCUEIL ---------- */
+  /* ---------- CARTE D'UN PROJET (page d'une collection) ---------- */
   // Les couvertures ne sont demandées que lorsqu'elles approchent de l'écran (économise beaucoup de données sur mobile).
   const lazy = "IntersectionObserver" in window
     ? new IntersectionObserver((entries, obs) => entries.forEach(e => {
         if (e.isIntersecting) { obs.unobserve(e.target); e.target._load(); }
       }), { rootMargin: "900px 0px" })
     : null;
-  function renderHome(data) {
-    const wrap = document.getElementById("categories");
+  function projectCard(p) {
+    const box = el("div", { class: "project-image placeholder" }, [el("span", { text: p.title.toUpperCase() })]);
+    if (cover(p)) {
+      const img = new Image();
+      img.alt = p.title;
+      img.decoding = "async";
+      img.onload = () => { box.className = "project-image"; box.replaceChildren(withMark(img)); };
+      img.onerror = () => { if (!img.dataset.fb) { img.dataset.fb = "1"; img.src = path(p, cover(p)); } };   // pas de version allégée : photo complète
+      box._load = () => { img.src = mediumPath(p, cover(p)); };
+      if (lazy) lazy.observe(box); else box._load();
+    }
+    return el("a", { class: "project", href: `project.html?p=${encodeURIComponent(p.slug)}` }, [
+      box,
+      el("div", {}, [el("strong", { text: p.title })])
+    ]);
+  }
+
+  /* ---------- COLECCIONES ---------- */
+  const collectionsTitle = data => (data.collections && typeof data.collections.title === "string" && data.collections.title.trim()) || "Colecciones";
+  function setCollectionsTitle(data) {   // titre du bloc (modifiable dans l'admin) : bloc d'accueil, menu, fil d'Ariane
+    document.querySelectorAll("[data-collections-title]").forEach(e => { e.textContent = collectionsTitle(data); });
+  }
+  const collectionUrl = cat => `coleccion.html?c=${encodeURIComponent(cat.id)}`;
+
+  // Accueil : une carte par colección (photo verticale + nom dessous), qui mène à la page de la colección.
+  function renderCollections(data) {
+    const wrap = document.getElementById("collections");
+    if (!wrap) return;
     data.categories.forEach(cat => {
-      const list = cat.projects;
-      if (!list.length) return;
-      const grid = el("div", { class: "project-grid" });
-      list.forEach(p => {
-        const box = el("div", { class: "project-image placeholder" }, [el("span", { text: p.title.toUpperCase() })]);
-        if (cover(p)) {
-          const img = new Image();
-          img.alt = p.title;
-          img.decoding = "async";
-          img.onload = () => { box.className = "project-image"; box.replaceChildren(withMark(img)); };
-          img.onerror = () => { if (!img.dataset.fb) { img.dataset.fb = "1"; img.src = path(p, cover(p)); } };   // pas de version allégée : photo complète
-          box._load = () => { img.src = mediumPath(p, cover(p)); };
-          if (lazy) lazy.observe(box); else box._load();
-        }
-        grid.appendChild(el("a", { class: "project", href: `project.html?p=${encodeURIComponent(p.slug)}` }, [
-          box,
-          el("div", {}, [el("strong", { text: p.title })])
-        ]));
-      });
-      wrap.appendChild(el("section", { class: "category", id: cat.id }, [
-        el("div", { class: "category-title" }, [
-          el("h3", { text: cat.label })
-        ]),
-        grid
+      const box = el("div", { class: "collection-image placeholder" });
+      if (cat.cover) {
+        const img = new Image();
+        img.alt = cat.label;
+        img.decoding = "async";
+        if (/^[\d.]+% [\d.]+%$/.test(cat.focus || "")) img.style.objectPosition = cat.focus;   // cadrage choisi dans l'admin
+        img.onload = () => { box.className = "collection-image"; box.replaceChildren(withMark(img)); };
+        img.onerror = () => { if (!img.dataset.fb) { img.dataset.fb = "1"; img.src = cat.cover; } };   // pas de version allégée : photo complète
+        img.src = LIGHT ? mediumOf(cat.cover) : cat.cover;
+      }
+      wrap.appendChild(el("a", { class: "collection", href: collectionUrl(cat) }, [
+        box,
+        el("span", { class: "collection-name", text: cat.label })
       ]));
     });
+  }
+
+  // Page d'une colección : la grille de projets (même affichage qu'avant sur l'accueil).
+  function renderCollection(data) {
+    const id = new URLSearchParams(location.search).get("c");
+    const idx = data.categories.findIndex(c => c.id === id);
+    const head = document.getElementById("head");
+    if (idx < 0) { head.appendChild(el("h1", { text: "Colección no encontrada" })); return; }
+    const cat = data.categories[idx];
+    document.title = `${cat.label} — ${(data.site && data.site.name) || "Ojo de Celia"}`;
+    head.appendChild(el("a", { class: "kicker", href: "index.html#colecciones", "data-collections-title": "", text: collectionsTitle(data) }));
+    head.appendChild(el("h1", { text: cat.label }));
+    const brand = document.querySelector(".nav .brand");
+    if (brand) brand.insertAdjacentElement("afterend", el("span", { class: "where" }, [el("span", { text: cat.label })]));
+
+    const grid = document.getElementById("projects");
+    if (!cat.projects.length) grid.replaceWith(el("p", { class: "empty", text: "Aún no hay proyectos en esta colección." }));
+    else cat.projects.forEach(p => grid.appendChild(projectCard(p)));
+
+    const pager = document.getElementById("pager");
+    const link = (c, label) => el("a", { href: collectionUrl(c), text: label });
+    pager.appendChild(idx > 0 ? link(data.categories[idx - 1], `← ${data.categories[idx - 1].label}`) : el("a", { href: "index.html#colecciones", text: "← Volver" }));
+    pager.appendChild(idx < data.categories.length - 1 ? link(data.categories[idx + 1], `${data.categories[idx + 1].label} →`) : el("span"));
   }
 
   /* ---------- PAGE PROJET ---------- */
@@ -136,7 +174,7 @@
       return;
     }
     document.title = `${p.title} — ${(data.site && data.site.name) || "Ojo de Celia"}`;
-    head.appendChild(el("span", { class: "kicker", text: cat.label }));
+    head.appendChild(el("a", { class: "kicker", href: collectionUrl(cat), text: cat.label }));
     head.appendChild(el("h1", { text: p.title }));
     if (p.description) head.appendChild(el("p", { text: p.description }));
 
@@ -269,7 +307,7 @@
     const sib = cat.projects, idx = sib.findIndex(x => x.slug === p.slug);
     const pager = document.getElementById("pager");
     const link = (q, label) => el("a", { href: `project.html?p=${encodeURIComponent(q.slug)}`, text: label });
-    pager.appendChild(idx > 0 ? link(sib[idx - 1], `← ${sib[idx - 1].title}`) : el("a", { href: "index.html#" + cat.id, text: "← Volver" }));
+    pager.appendChild(idx > 0 ? link(sib[idx - 1], `← ${sib[idx - 1].title}`) : el("a", { href: collectionUrl(cat), text: "← Volver" }));
     pager.appendChild(idx < sib.length - 1 ? link(sib[idx + 1], `${sib[idx + 1].title} →`) : el("span"));
   }
 
@@ -372,9 +410,11 @@
           if (hero.complete && hero.naturalWidth) withMark(hero);
           else hero.addEventListener("load", () => withMark(hero), { once: true });
         }
-        renderHome(data); renderAbout(data);
+        renderCollections(data); renderAbout(data);
       }
       if (page === "project") renderProject(data);
+      if (page === "collection") renderCollection(data);
+      setCollectionsTitle(data);
     })
     .catch(err => {
       console.error("Impossible de charger site.json", err);

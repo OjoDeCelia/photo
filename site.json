@@ -10,6 +10,9 @@
     "text": "Escribe aquí tu presentación: quién eres, cómo llegaste a la fotografía y qué te gusta fotografiar.",
     "email": "celiaperezguijarro4@gmail.com"
   },
+  "collections": {
+    "title": "Colecciones"
+  },
   "watermark": {
     "enabled": true,
     "color": "light",
@@ -19,13 +22,27 @@
   },
   "categories": [
     {
-      "id": "portraits",
+      "id": "retratos",
       "label": "Retratos",
+      "cover": "",
       "projects": []
     },
     {
-      "id": "street",
+      "id": "calle",
       "label": "Fotografía callejera",
+      "cover": "",
+      "projects": []
+    },
+    {
+      "id": "coleccion-3",
+      "label": "Colección 3",
+      "cover": "",
+      "projects": []
+    },
+    {
+      "id": "coleccion-4",
+      "label": "Colección 4",
+      "cover": "",
       "projects": []
     }
   ]
