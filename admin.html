@@ -114,6 +114,14 @@
   .cov-pv{display:block;width:120px;aspect-ratio:282/502;object-fit:cover;background:#e4e1da;margin:4px 0 0}
   .cov-box input[type=range]{display:block;width:100%;max-width:260px;margin:4px 0 0;accent-color:var(--fg)}
   .cov-box label.f{margin-top:12px}
+  .hero-box input[type=range]{display:block;width:100%;max-width:260px;margin:4px 0 0;accent-color:var(--fg)}
+  .hero-box label.f{margin-top:12px}
+  .hero-frame{container-type:inline-size;width:100%;max-width:460px}
+  .hero-pv.crop{width:100%;height:auto;max-height:50.6cqw;object-fit:cover}   /* 90 % de la altura de una pantalla 16:9 */
+  .grid.cov-hist{grid-template-columns:repeat(auto-fill,minmax(84px,1fr))}
+  .cov-hist .im{aspect-ratio:282/502}
+  .adm .cov-hist .tile .tb{grid-template-columns:1fr auto}
+  .adm .cov-hist .tile .tb button{padding:7px 8px;font-size:11px}
   .grid.hero-hist{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
   .hero-hist .im{aspect-ratio:16/9}
   .adm .hero-hist .tile .tb{grid-template-columns:1fr auto}
@@ -334,7 +342,7 @@
     coverPaths(d).forEach(x => s.add(x));
     return s;
   };
-  const coverPaths = d => d.categories.map(c => c.cover).filter(Boolean);   // photo de chaque colección (tarjetas del inicio)
+  const coverPaths = d => d.categories.flatMap(c => [c.cover].concat(Array.isArray(c.history) ? c.history : [])).filter(Boolean);   // photo de chaque colección (tarjetas del inicio) + sus fotos anteriores
   function heroAll(d) {                    // grande photo actuelle + anciennes gardées
     const hh = d.hero || {};
     return (hh.image ? [hh.image] : []).concat(Array.isArray(hh.history) ? hh.history : []);
@@ -1071,6 +1079,11 @@
   /* ---------- photo de chaque colección (tarjetas verticales del inicio) ---------- */
   const COV_DIR = "colecciones";           // colecciones/NOM.jpg (+ thumbs/ et medium/ comme les autres photos)
   const covSrc = path => previews.get(path) || encodeURI(repoFiles.has(thumbOfPath(path)) ? thumbOfPath(path) : path);
+  const catHistory = c => Array.isArray(c.history) ? c.history : [];
+  function setCatCover(cat, path, history) {   // la foto cambia : el encuadre vuelve al centro
+    cat.cover = path || ""; delete cat.focus;
+    if (history.length) cat.history = history; else delete cat.history;
+  }
   const focusOf = c => { const m = /^([\d.]+)% ([\d.]+)%$/.exec(c.focus || ""); return m ? [+m[1], +m[2]] : [50, 50]; };
   function coverBox(cat) {
     const cur = cat.cover, pend = cur && pending.get(cur);
@@ -1097,13 +1110,39 @@
       btn(cur ? "Cambiar la foto" : "Elegir la foto", "Cambiar la foto de la colección", () => input.click()),
       cur ? btn("Quitar la foto", "Quitar la foto de la colección", () => removeCatCover(cat), false, "danger") : null
     ]));
-    box.appendChild(h("p", { class: "ph-note", text: `Se muestra en vertical en el inicio (la foto se recorta): usa el encuadre para elegir qué parte se ve. La foto se comprime (${MAX_SIDE} px como máximo), se crea una versión móvil y todo se guarda en la carpeta ${COV_DIR}/. Se eliminan los metadatos (incluido el GPS).` }));
+    box.appendChild(h("p", { class: "ph-note", text: `Se muestra en vertical en el inicio (la foto se recorta): usa el encuadre para elegir qué parte se ve. La foto se comprime (${MAX_SIDE} px como máximo), se crea una versión móvil y todo se guarda en la carpeta ${COV_DIR}/. Se eliminan los metadatos (incluido el GPS). «Quitar la foto» no la borra: pasa a «Fotos anteriores».` }));
+    const hist = catHistory(cat);
+    if (hist.length) {
+      box.appendChild(h("label", { class: "f", style: "margin-top:22px", text: `Fotos anteriores · ${hist.length}` }));
+      box.appendChild(h("p", { class: "ph-note", style: "margin-top:0", text: "Se conservan en el repositorio pero no se muestran en el sitio. «Usar» vuelve a poner una foto en la colección (la actual pasa entonces a esta lista y el encuadre vuelve al centro)." }));
+      box.appendChild(h("div", { class: "grid cov-hist" }, hist.map(path => h("div", { class: "tile" }, [
+        h("div", { class: "im" }, [h("img", { alt: path, src: covSrc(path), decoding: "async" })]),
+        h("div", { class: "tb" }, [
+          btn("Usar", "Volver a poner esta foto en la colección", () => useCatCover(cat, path)),
+          btn("✕", "Eliminar definitivamente esta foto anterior", () => dropCatCover(cat, path), false, "danger")
+        ])
+      ]))));
+    }
     return box;
   }
+  function useCatCover(cat, path) {
+    const hist = catHistory(cat).filter(x => x !== path);
+    if (cat.cover) hist.unshift(cat.cover);
+    setCatCover(cat, path, hist); changed();
+  }
+  function dropCatCover(cat, path) {
+    if (!confirm(`¿Eliminar definitivamente esta foto anterior (${path})?\nSe borrará del repositorio al guardar.`)) return;
+    const hist = catHistory(cat).filter(x => x !== path);
+    if (hist.length) cat.history = hist; else delete cat.history;
+    forgetLocal(path); changed();
+  }
   function removeCatCover(cat) {
-    if (!cat.cover) return;
-    if (pending.has(cat.cover)) forgetLocal(cat.cover);   // jamás publicada : se olvida sin más
-    cat.cover = ""; delete cat.focus; changed();          // ya publicada : se borra del repositorio al guardar
+    const old = cat.cover;
+    if (!old) return;
+    const hist = catHistory(cat).slice();
+    if (pending.has(old)) forgetLocal(old);   // jamás publicada : se olvida sin más
+    else hist.unshift(old);                   // ya publicada : se conserva en « Fotos anteriores »
+    setCatCover(cat, "", hist); changed();
   }
   async function replaceCatCover(cat, file) {
     if (!file || busy) return;
@@ -1117,8 +1156,10 @@
       try { mb = await resizeImpl(blob, MED_SIDE, MED_Q); pendingThumbs.set(mediumOfPath(path), { blob: mb }); } catch (e) { /* sin versión móvil : el sitio usará la foto completa */ }
       try { pendingThumbs.set(thumbOfPath(path), { blob: await resizeImpl(mb || blob, THUMB_SIDE, THUMB_Q) }); } catch (e) { /* sin miniatura : se mostrará la foto */ }
       previews.set(path, URL.createObjectURL(blob));
-      if (cat.cover && pending.has(cat.cover)) forgetLocal(cat.cover);   // la anterior nunca se publicó : inútil conservarla
-      cat.cover = path; delete cat.focus;                                  // la anterior (ya publicada) se borra al guardar
+      const old = cat.cover, hist = catHistory(cat).slice();
+      if (old && pending.has(old)) forgetLocal(old);   // la anterior nunca se publicó : inútil conservarla
+      else if (old) hist.unshift(old);                 // la anterior (ya publicada) pasa a « Fotos anteriores »
+      setCatCover(cat, path, hist);
       busy = false; changed();
       say($("saveMsg"), `Foto comprimida${file.size ? `: ${fmt(file.size)} → ${fmt(blob.size)}` : ""}${mb ? ` (versión móvil: ${fmt(mb.size)})` : ""}. Pulsa «Guardar» para publicarla.`, "ok");
     } catch (e) {
@@ -1131,10 +1172,12 @@
   const heroSrc = path => previews.get(path) || encodeURI(path);
   const heroThumb = path => previews.get(path) || encodeURI(repoFiles.has(thumbOfPath(path)) ? thumbOfPath(path) : path);
   const heroHistory = () => (work.hero && Array.isArray(work.hero.history)) ? work.hero.history : [];
-  function setHeroState(image, history) {
+  function setHeroState(image, history, keepFocus) {   // la foto cambia : el encuadre vuelve al centro (salvo si es la misma foto optimizada)
     work.hero = Object.assign({}, work.hero, { image: image || "", history });
     if (!history.length) delete work.hero.history;
+    if (!keepFocus) delete work.hero.focus;
   }
+  const heroFocusY = () => { const m = /^[\d.]+% ([\d.]+)%$/.exec((work.hero && work.hero.focus) || ""); return m ? +m[1] : 50; };
   function forgetLocal(path) {             // photo choisie puis abandonnée avant tout enregistrement
     pending.delete(path); derivs(path).forEach(d => pendingThumbs.delete(d));
     if (previews.has(path)) { URL.revokeObjectURL(previews.get(path)); previews.delete(path); }
@@ -1148,14 +1191,34 @@
     const cur = work.hero && work.hero.image, hist = heroHistory();
     const input = h("input", { type: "file", accept: "image/*", class: "hidden", "aria-label": "Elegir la foto grande" });
     input.addEventListener("change", () => { replaceHero(input.files[0]); input.value = ""; });
-    const pic = cur ? h("img", { class: "hero-pv", alt: "Foto grande actual", src: heroSrc(cur) })
+    const crop = !!(work.hero && work.hero.crop), fy = heroFocusY();
+    const pic = cur ? h("img", { class: "hero-pv" + (crop ? " crop" : ""), alt: "Foto grande actual", src: heroSrc(cur), style: crop ? `object-position:50% ${fy}%` : null })
                     : h("div", { class: "hero-pv none" });
     const pend = cur && pending.get(cur);
-    const box = h("div", {}, [pic, input,
+    const chk = h("input", { type: "checkbox", checked: crop, "aria-label": "Recortar la foto grande en vertical" });
+    chk.addEventListener("change", () => {
+      work.hero = Object.assign({}, work.hero);
+      if (chk.checked) work.hero.crop = true; else delete work.hero.crop;
+      changed();
+    });
+    const box = h("div", { class: "hero-box" }, [crop && cur ? h("div", { class: "hero-frame" }, [pic]) : pic, input,
       h("div", { class: "meta", text: cur ? `Archivo: ${cur}${pend ? ` · ${fmt(pend.blob.size)} (nueva, aún sin guardar)` : ""}` : "Sin foto" }),
       h("div", { class: "btns", style: "margin-top:12px" }, [btn("Cambiar la foto", "Cambiar la foto grande del inicio", () => input.click())]),
+      h("label", { class: "check" }, [chk, h("span", { text: "Recortar la foto en vertical" })]),
+      h("p", { class: "ph-note crop-note", text: crop
+        ? "La foto ocupa todo el ancho de la pantalla y nunca pasa del 90 % de su altura: si es más alta, se recorta. Usa el encuadre para elegir qué parte se ve. La vista previa simula una pantalla de ordenador (16:9); en el móvil, que es más alto, se recorta menos."
+        : "Sin recorte, la foto se muestra entera. Si es muy alta, no ocupa todo el ancho de la pantalla: activa el recorte para que sí lo haga sin pasar del 90 % de la altura." }),
       h("p", { class: "ph-note", text: `La foto se comprime (${HERO_SIDE} px como máximo), se crea automáticamente una versión móvil (${HERO_MED_SIDE} px) y todo se guarda en la carpeta ${HERO_DIR}/. Se eliminan los metadatos (incluido el GPS).` })
     ]);
+    if (crop && cur) {
+      const inp = h("input", { type: "range", min: "0", max: "100", value: String(fy), "aria-label": "Encuadre vertical" });
+      inp.addEventListener("input", () => {
+        work.hero.focus = `50% ${inp.value}%`; pic.style.objectPosition = work.hero.focus;
+        updateSave(); say($("saveMsg"), "");
+      });
+      const at = box.querySelector(".crop-note");
+      at.insertAdjacentElement("afterend", inp); at.insertAdjacentElement("afterend", h("label", { class: "f", text: "Encuadre vertical" }));
+    }
     if (heroNeedsOptimizing(cur)) box.appendChild(h("div", { class: "gen" }, [
       h("span", { text: cur.startsWith(HERO_DIR + "/")
         ? "Esta foto no tiene versión móvil: en el teléfono se descarga a tamaño grande. "
@@ -1205,7 +1268,7 @@
       const hist = heroHistory().slice();
       if (old && pending.has(old)) forgetLocal(old);    // jamais publiée : inutile de la garder
       else if (old && !opts.dropOld) hist.unshift(old); // déjà en ligne : on la garde dans les anciennes
-      setHeroState(path, hist);
+      setHeroState(path, hist, !!opts.dropOld);
       busy = false; changed();
       say($("saveMsg"), `Foto comprimida${file.size ? `: ${fmt(file.size)} → ${fmt(blob.size)}` : ""}${mb ? ` (versión móvil: ${fmt(mb.size)})` : ""}. Pulsa «Guardar» para publicarla.`, "ok");
     } catch (e) {
@@ -1356,7 +1419,7 @@
 
   if (window.__ADMIN_TEST__) window.__ADMIN_TEST__ = {
     connect, save, addCategory, addProject, deleteProject, deleteCategory, moveProject,
-    addPhotos, removePhoto, setCover, replaceHero, optimizeHero, heroNeedsOptimizing, mediumOfPath, allProjects, slugify, sortableSource, sortableTarget,
+    addPhotos, removePhoto, setCover, replaceCatCover, removeCatCover, useCatCover, dropCatCover, replaceHero, optimizeHero, heroNeedsOptimizing, mediumOfPath, allProjects, slugify, sortableSource, sortableTarget,
     setResize: f => { resizeImpl = f; }, generateThumbs, missingThumbs, thumbOfPath, getRepoFiles: () => repoFiles, getThumbs: () => pendingThumbs,
     getWork: () => work, getSaved: () => saved, getPending: () => pending, isDirty, setDrag: d => { drag = d; }, getDrag: () => drag
   };

@@ -78,6 +78,14 @@
     return img;
   }
 
+  // Recorte vertical (opción del admin) : la foto ocupa todo el ancho y nunca pasa del 90 % de la altura de la pantalla ;
+  // si es más alta, se recorta y « focus » elige qué parte se ve (solo el eje vertical cuenta).
+  function applyHeroCrop(img, hero) {
+    if (!img || !hero || !hero.crop) return;
+    img.parentNode.classList.add("crop");
+    if (/^[\d.]+% [\d.]+%$/.test(hero.focus || "")) img.style.objectPosition = hero.focus;
+  }
+
   const path = (p, file) => `${p.folder}/${file}`;
   // Version allégée (créée par l'admin : dossier/medium/NOM.jpg). Si elle n'existe pas encore, on retombe sur la photo complète.
   const mediumOf = full => full.replace(/(^|\/)([^/]+?)\.[^./]+$/, "$1medium/$2.jpg");
@@ -104,7 +112,7 @@
       box._load = () => { img.src = mediumPath(p, cover(p)); };
       if (lazy) lazy.observe(box); else box._load();
     }
-    return el("a", { class: "project", href: `project.html?p=${encodeURIComponent(p.slug)}` }, [
+    return el("a", { class: "project", href: projectUrl(p) }, [
       box,
       el("div", {}, [el("strong", { text: p.title })])
     ]);
@@ -116,6 +124,46 @@
     document.querySelectorAll("[data-collections-title]").forEach(e => { e.textContent = collectionsTitle(data); });
   }
   const collectionUrl = cat => `coleccion.html?c=${encodeURIComponent(cat.id)}`;
+  const projectUrl = p => `project.html?p=${encodeURIComponent(p.slug)}`;
+
+  /* ---------- MENÚ DESPLEGABLE (barra de arriba) : colecciones → proyectos ----------
+     Sustituye el enlace « Colecciones » : un botón que despliega la jerarquía completa.
+     Ordenador : se abre al pasar el ratón (y con el teclado) ; móvil : se abre y se cierra al tocar.
+     Sin JavaScript queda el enlace normal hacia el bloque de colecciones del inicio. */
+  function buildMenu(data) {
+    const nav = document.querySelector(".nav nav");
+    const link = nav && nav.querySelector("a[data-collections-title]");
+    if (!link || !data.categories.length) return;
+    const q = new URLSearchParams(location.search);
+    const current = c => (page === "collection" && q.get("c") === c.id) ? { "aria-current": "page" } : {};
+    const hoverMode = window.matchMedia("(hover: hover) and (pointer: fine)");
+
+    const list = el("ul", { class: "menu-list" }, data.categories.map(cat => {
+      const li = el("li", {}, [el("a", Object.assign({ class: "menu-col", href: collectionUrl(cat), text: cat.label }, current(cat)))]);
+      if (cat.projects.length) li.appendChild(el("ul", { class: "menu-projects" }, cat.projects.map(p =>
+        el("li", {}, [el("a", Object.assign({ href: projectUrl(p), text: p.title }, (page === "project" && q.get("p") === p.slug) ? { "aria-current": "page" } : {}))]))));
+      return li;
+    }));
+    const all = el("a", { class: "menu-all", href: (page === "home" ? "" : "index.html") + "#colecciones", text: "Ver todas" });
+    const panel = el("div", { class: "menu-panel", id: "menu-panel" }, [list, all]);
+    const btn = el("button", { type: "button", class: "menu-btn", "aria-expanded": "false", "aria-controls": "menu-panel", "data-collections-title": "", text: collectionsTitle(data) });
+    const wrap = el("div", { class: "menu" }, [btn, panel]);
+    link.replaceWith(wrap);
+
+    let timer = 0;
+    const setOpen = open => {
+      clearTimeout(timer);
+      wrap.classList.toggle("open", open);
+      btn.setAttribute("aria-expanded", String(open));
+    };
+    btn.addEventListener("click", () => setOpen(hoverMode.matches ? true : !wrap.classList.contains("open")));
+    wrap.addEventListener("mouseenter", () => { if (hoverMode.matches) setOpen(true); });
+    wrap.addEventListener("mouseleave", () => { if (hoverMode.matches) { clearTimeout(timer); timer = setTimeout(() => setOpen(false), 200); } });
+    panel.addEventListener("click", e => { if (e.target.closest("a")) setOpen(false); });          // enlace al mismo documento (#colecciones) : se cierra
+    wrap.addEventListener("focusout", e => { if (e.relatedTarget && !wrap.contains(e.relatedTarget)) setOpen(false); });
+    document.addEventListener("click", e => { if (!wrap.contains(e.target)) setOpen(false); });
+    document.addEventListener("keydown", e => { if (e.key === "Escape" && wrap.classList.contains("open")) { setOpen(false); btn.focus(); } });
+  }
 
   // Accueil : une carte par colección (photo verticale + nom dessous), qui mène à la page de la colección.
   function renderCollections(data) {
@@ -403,8 +451,10 @@
     .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(data => {
       setWatermark(data);
+      buildMenu(data);
       if (page === "home") {
         const hero = setHeroImage(data.hero && data.hero.image);
+        applyHeroCrop(hero, data.hero);
         renderHeroText(data);
         if (hero && WM) {
           if (hero.complete && hero.naturalWidth) withMark(hero);
