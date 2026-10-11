@@ -24,8 +24,18 @@
     {
       "id": "retratos",
       "label": "Retratos",
-      "cover": "",
-      "projects": []
+      "cover": "colecciones/20261011-163712-u96.jpg",
+      "projects": [
+        {
+          "slug": "coleccion-1",
+          "title": "Coleccion 1",
+          "description": "",
+          "folder": "retratos/coleccion-1",
+          "cover": "",
+          "photos": ["20261011-163707-tjv.jpg", "20261011-163707-791.jpg"]
+        }
+      ],
+      "focus": "19% 53%"
     },
     {
       "id": "calle",
