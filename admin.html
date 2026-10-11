@@ -105,6 +105,12 @@
   /* accueil */
   .hero-pv{display:block;max-width:100%;max-height:220px;background:#e4e1da;margin-top:4px}
   .hero-pv.none{width:100%;height:120px}
+  .adm details.cov-fold{margin-top:16px;border:1px solid var(--line);background:rgba(255,255,255,.45);color:var(--fg);line-height:normal}
+  .adm details.cov-fold summary{list-style:none;display:flex;align-items:center;gap:10px;padding:11px 12px;font:11px "DM Mono",monospace;text-transform:uppercase;color:var(--muted);cursor:pointer}
+  .adm details.cov-fold summary::-webkit-details-marker{display:none}
+  .adm details.cov-fold summary .chev{width:14px;font-size:14px}
+  .adm details.cov-fold[open] summary .chev{transform:rotate(90deg)}
+  .cov-fold .fold-body{padding:0 14px 16px}
   .cov-pv{display:block;width:120px;aspect-ratio:282/502;object-fit:cover;background:#e4e1da;margin:4px 0 0}
   .cov-box input[type=range]{display:block;width:100%;max-width:260px;margin:4px 0 0;accent-color:var(--fg)}
   .cov-box label.f{margin-top:12px}
@@ -268,7 +274,7 @@
   let repoFiles = new Set();               // fichiers déjà présents dans le dépôt
   let treeKnown = false;                   // true si la liste des fichiers du dépôt a pu être lue
   let renderGen = 0;                       // sert à abandonner les chargements d'une ancienne vue
-  const ui = { cats: new Set(), projs: new Set(), sel: null, view: null };   // éléments dépliés ; sel = photo sélectionnée au toucher (chemin) ; view = aperçu "desk" (2 colonnes) ou "mob" (1 colonne)
+  const ui = { cats: new Set(), projs: new Set(), covs: new Set(), sel: null, view: null };   // éléments dépliés ; sel = photo sélectionnée au toucher (chemin) ; view = aperçu "desk" (2 colonnes) ou "mob" (1 colonne)
   const VIEW_KEY = "admin-view";
   try { const v = localStorage.getItem(VIEW_KEY); if (v === "desk" || v === "mob") ui.view = v; } catch (e) { /* stockage indisponible */ }
   let resizeImpl = resize;
@@ -987,8 +993,16 @@
         const body = h("div", { class: "body" });
         body.appendChild(h("label", { class: "f", text: "Nombre de la colección" }));
         body.appendChild(editable({ label: "nombre de la colección", cls: "big", get: () => cat.label, set: v => { cat.label = v; }, onChange: changed, placeholder: "Nombre de la colección" }));
-        body.appendChild(h("label", { class: "f", text: "Foto de la colección" }));
-        body.appendChild(coverBox(cat));
+        // la foto de la colección se cambia pocas veces : bloque plegado por defecto (se queda abierto si se está editando)
+        const cv = h("details", { class: "cov-fold", open: ui.covs.has(cat.id) }, [
+          h("summary", {}, [
+            h("span", { class: "chev", "aria-hidden": "true", text: "▸" }),
+            h("span", { text: cat.cover ? "Foto de la colección" : "Foto de la colección · sin foto" })
+          ]),
+          h("div", { class: "fold-body" }, [coverBox(cat)])
+        ]);
+        cv.addEventListener("toggle", () => { if (cv.open) ui.covs.add(cat.id); else ui.covs.delete(cat.id); });
+        body.appendChild(cv);
         body.appendChild(h("div", { class: "btns" }, [btn("Eliminar la colección", "Eliminar la colección", () => deleteCategory(ci), false, "danger")]));
         card.appendChild(body);
 
