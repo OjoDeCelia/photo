@@ -14,7 +14,7 @@
     "title": "Colecciones"
   },
   "watermark": {
-    "enabled": true,
+    "enabled": false,
     "color": "light",
     "size": "s",
     "position": "right",
