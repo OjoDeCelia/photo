@@ -1,0 +1,32 @@
+{
+  "site": {
+    "name": "Ojo de Celia"
+  },
+  "hero": {
+    "title": "Personas, lugares\ny momentos.",
+    "image": ""
+  },
+  "about": {
+    "text": "Escribe aquí tu presentación: quién eres, cómo llegaste a la fotografía y qué te gusta fotografiar.",
+    "email": "celiaperezguijarro4@gmail.com"
+  },
+  "watermark": {
+    "enabled": true,
+    "color": "light",
+    "size": "s",
+    "position": "right",
+    "opacity": 0.8
+  },
+  "categories": [
+    {
+      "id": "portraits",
+      "label": "Retratos",
+      "projects": []
+    },
+    {
+      "id": "street",
+      "label": "Fotografía callejera",
+      "projects": []
+    }
+  ]
+}

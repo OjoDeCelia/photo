@@ -1,0 +1,1277 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Administración</title>
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400&family=Manrope:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .adm{max-width:720px;margin:0 auto;padding:40px 20px 40px}
+  .adm h1{font-size:clamp(28px,6vw,44px);margin:34px 0 8px}
+  .adm .lead{color:var(--muted);line-height:1.6;margin:0 0 30px}
+  .adm section{border-top:1px solid var(--line);padding:22px 0 30px}
+  .adm h2{font-size:18px;font-weight:500;letter-spacing:-.02em;margin:0 0 18px}
+  .adm h3{font:11px "DM Mono",monospace;text-transform:uppercase;color:var(--muted);margin:34px 0 14px;font-weight:400}
+  .adm label.f{display:block;font:11px "DM Mono",monospace;text-transform:uppercase;color:var(--muted);margin:16px 0 6px}
+  .adm input[type=text],.adm input[type=email],.adm input[type=password],.adm textarea{width:100%;font:inherit;font-size:16px;padding:12px;border:1px solid var(--line);background:#fff;color:var(--fg);border-radius:0}
+  .adm textarea{min-height:110px;resize:vertical;line-height:1.45}
+  .adm .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .adm .check{display:flex;gap:10px;align-items:center;margin:18px 0 0;color:var(--fg)}
+  .adm button{font:11px "DM Mono",monospace;text-transform:uppercase;letter-spacing:.06em;padding:14px 22px;border:1px solid var(--fg);background:var(--fg);color:var(--bg);cursor:pointer;margin-top:22px}
+  .adm button.ghost{background:none;color:var(--fg);margin-left:8px}
+  .adm button:disabled{opacity:.4;cursor:default}
+  .adm button.sm{padding:9px 12px;margin:0;font-size:10px}
+  .adm button.danger{background:none;color:#a3261c;border-color:#a3261c}
+  .adm button.plain{background:none;color:var(--fg);border-color:var(--line)}
+  .adm .msg{margin-top:12px;line-height:1.5;min-height:1.5em}
+  .adm .msg.err{color:#a3261c}.adm .msg.ok{color:#2c6b3a}
+  .adm details{margin-top:16px;color:var(--muted);line-height:1.6}
+  .adm summary{cursor:pointer;color:var(--fg)}
+  .adm ol{padding-left:20px;margin:10px 0 0}
+  .adm .hidden{display:none}
+  .adm .top{display:flex;justify-content:space-between;align-items:baseline}
+  .adm .top a{font:11px "DM Mono",monospace;text-transform:uppercase;color:inherit}
+  .adm :focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+
+  /* texte fixe, éditable au clic */
+  .ed-view{padding:8px 0;border-bottom:1px dashed transparent;cursor:text;line-height:1.45;white-space:pre-wrap;word-break:break-word}
+  .ed-view:hover,.ed-view:focus{border-bottom-color:var(--muted)}
+  .ed-view::after{content:" ✎";color:var(--muted);opacity:0;font-size:12px}
+  .ed-view:hover::after,.ed-view:focus::after{opacity:1}
+  @media (pointer:coarse){.ed-view::after{opacity:1}}
+  .ed-view.empty{color:var(--muted);font-style:italic}
+  .ed.big .ed-view{font-size:18px}
+
+  /* accordéons */
+  .acc{border:1px solid var(--line);margin:0 0 12px;background:rgba(255,255,255,.45)}
+  .acc.sub{border-width:1px 0 0;margin:0;background:none}
+  .head{display:flex;align-items:center;gap:6px;padding:4px 8px 4px 0}
+  .head.over,.tile.over{outline:2px dashed var(--fg);outline-offset:-2px}
+  .adm .tgl{flex:1;display:flex;align-items:center;gap:10px;text-align:left;background:none;border:0;color:var(--fg);margin:0;padding:14px 12px;font:inherit;font-size:16px;letter-spacing:-.01em;text-transform:none;min-width:0}
+  .tgl .chev{width:14px;color:var(--muted);flex:none}
+  .tgl .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tgl .n{font:10px "DM Mono",monospace;color:var(--muted);text-transform:uppercase;white-space:nowrap}
+  .acc.sub .tgl{font-size:15px;padding-left:28px}
+  .handle{cursor:grab;color:var(--muted);padding:6px 8px;user-select:none}
+  @media (pointer:coarse){.handle{display:none}}
+  .body{padding:4px 16px 18px}
+  .acc.sub .body{padding:2px 16px 18px 28px}
+  .body .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;align-items:center}
+  .adm select{font:inherit;font-size:14px;padding:8px;border:1px solid var(--line);background:#fff;color:var(--fg);border-radius:0}
+  .adm .meta{font:10px "DM Mono",monospace;color:var(--muted);text-transform:uppercase;margin:4px 0 0}
+  .add-row{display:flex;gap:8px;margin-top:16px}
+  .add-row input{flex:1;min-width:0}
+  .add-row button{margin:0}
+
+  /* photos */
+  .ph-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:18px 0 8px;flex-wrap:wrap}
+  .ph-bar .lbl{font:11px "DM Mono",monospace;text-transform:uppercase;color:var(--muted)}
+  .ph-note{font-size:12px;color:var(--muted);line-height:1.5;margin:6px 0 10px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px}
+  .tile{border:1px solid var(--line);background:#fff;padding:4px}
+  .tile .im{position:relative;aspect-ratio:1;background:#e4e1da;overflow:hidden}
+  .tile img{width:100%;height:100%;object-fit:cover;display:block}
+  .tile .tb{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-top:4px}
+  .adm .tile .tb button{padding:7px 0;font-size:12px;letter-spacing:0;text-transform:none;border-color:var(--line);background:none;color:var(--fg)}
+  .adm .tile .tb button.on{background:var(--fg);color:var(--bg)}
+  .adm .tile .tb button:disabled{opacity:.25}
+  .gen{margin:0 0 18px;padding:12px 14px;border:1px dashed var(--line);font-size:13px;color:var(--muted);line-height:1.5}
+  .gen button{margin-top:10px}
+
+  /* filigrane */
+  .wm-set{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:6px}
+  .wm-set select{width:100%}
+  .wm-set input[type=range]{width:100%;margin:10px 0 0;accent-color:var(--fg)}
+  .wm-prev-box{margin-top:20px}
+  .wm-prev{width:380px;max-width:100%;aspect-ratio:3/2;background:linear-gradient(160deg,#d9b48b 0%,#a7826a 45%,#3f4a59 100%)}
+  .wm-off .wm{display:none}
+  .wm-off .wm-prev{opacity:.5}
+
+  /* section dépliable (filigrane) */
+  .adm details.fold{margin-top:44px;border:1px solid var(--line);background:rgba(255,255,255,.45);color:var(--fg);line-height:normal}
+  .adm details.fold summary{list-style:none;display:flex;align-items:center;gap:10px;padding:14px 12px;font-size:18px;font-weight:500;letter-spacing:-.02em}
+  .adm details.fold summary::-webkit-details-marker{display:none}
+  .adm details.fold summary .chev{width:14px;color:var(--muted);font-size:14px}
+  .adm details.fold[open] summary .chev{transform:rotate(90deg)}
+  .adm details.fold + details.fold{margin-top:12px}
+  .fold-body{padding:0 16px 20px}
+  .fold-body > label.f:first-child{margin-top:0}
+
+  /* accueil */
+  .hero-pv{display:block;max-width:100%;max-height:220px;background:#e4e1da;margin-top:4px}
+  .hero-pv.none{width:100%;height:120px}
+  .grid.hero-hist{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+  .hero-hist .im{aspect-ratio:16/9}
+  .adm .hero-hist .tile .tb{grid-template-columns:1fr auto}
+  .adm .hero-hist .tile .tb button{padding:7px 10px;font-size:11px}
+
+  /* couverture du projet (en haut du projet déplié) */
+  .cover-box{margin:0 0 8px}
+  .cover-row{display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap}
+  .cover-img{display:block;width:auto;height:auto;max-width:min(100%,260px);max-height:150px;background:#e4e1da;border:1px solid var(--line)}
+  .cover-row .meta{margin:0;max-width:260px;line-height:1.5}
+
+  /* aperçu de la page d'un projet = éditeur des photos */
+  .pv{margin-top:12px;padding:14px;border:1px solid var(--line);background:var(--bg)}
+  .pv.drop{outline:2px dashed var(--fg);outline-offset:-2px}
+  .pv-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+  .pv-head .lbl{font:11px "DM Mono",monospace;text-transform:uppercase;color:var(--muted)}
+  .seg{display:flex}
+  .adm .seg button{margin:0}
+  .adm .seg button + button{border-left-width:0}
+  .adm .seg button[aria-pressed=true]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+  .pv-cols{display:flex;gap:3%;align-items:flex-start;max-width:360px;margin:0 auto}      /* ordinateur : 2 colonnes, petit pour tout voir */
+  .pv.mob .pv-cols{max-width:230px}                                                     /* mobile : 1 colonne, largeur d'un téléphone */
+  .pv-col{flex:1;min-width:0}
+  .pv-it{position:relative;margin:0 0 5%;background:#e4e1da;user-select:none;-webkit-user-select:none}   /* 5 % = même espace que GAP dans splitColumns */
+  .pv.fine .pv-it{cursor:grab}
+  .pv-it img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;pointer-events:none}
+  .pv-it.dragging{opacity:.35}
+  .pv-it.mk-before{box-shadow:0 -4px 0 var(--fg)}     /* trait noir : la photo glissée ira ici */
+  .pv-it.mk-after{box-shadow:0 4px 0 var(--fg)}
+  .pv-it.sel{outline:2px solid var(--fg);outline-offset:-2px}
+  .pv-no{position:absolute;left:4px;top:4px;background:rgba(21,21,21,.85);color:#fff;font:9px "DM Mono",monospace;padding:2px 5px;pointer-events:none}
+  .pv-bd{position:absolute;right:4px;top:4px;display:flex;flex-direction:column;align-items:flex-end;gap:3px;pointer-events:none}
+  .pv-bd span{background:var(--bg);font:9px "DM Mono",monospace;padding:2px 5px;text-transform:uppercase}
+  .pv-bd span.new{background:#2c6b3a;color:#fff}
+  .pv-bar{position:absolute;left:5px;right:5px;bottom:5px;display:none;grid-template-columns:repeat(4,1fr);gap:3px}
+  .pv-it:focus-within .pv-bar,.pv-it.sel .pv-bar{display:grid}
+  @media (hover:hover){.pv-it:hover .pv-bar{display:grid}}
+  .adm .pv-bar button{margin:0;padding:7px 0;font-size:13px;letter-spacing:0;text-transform:none;background:rgba(245,244,240,.95);color:var(--fg);border:1px solid var(--line)}
+  .adm .pv-bar button.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+  .adm .pv-bar button.danger{color:#a3261c}
+  .adm .pv-bar button:disabled{opacity:.3}
+  .pv-it.bad{cursor:pointer}
+  .pv-it.bad::after{content:"↻ Reintentar";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:10px "DM Mono",monospace;color:var(--muted);text-transform:uppercase;text-align:center}
+  .pv-it.bad img{visibility:hidden}
+  .pv-empty{color:var(--muted);font-size:13px;line-height:1.5;padding:26px 10px;text-align:center}
+  /* barre de la photo sélectionnée (toucher) : reste visible en haut pendant qu'on fait défiler l'aperçu */
+  .pv-sel{position:sticky;top:0;z-index:4;margin:0 0 12px;padding:8px;background:var(--bg);border:1px solid var(--fg)}
+  .pv-sel-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 8px;min-height:32px}
+  .pv-sel-t{font:11px "DM Mono",monospace;text-transform:uppercase;line-height:1.4}
+  .pv-sel-ctl{display:flex;gap:6px;align-items:stretch}
+  .pv-sel-ctl select{flex:1;min-width:0;font-size:16px}
+  .adm .pv-sel-ctl button{flex:none;width:44px;margin:0;padding:11px 0;font-size:15px;letter-spacing:0;text-transform:none}
+  .adm .pv-sel-top button{margin:0}
+  .adm .pv-sel button.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+  @media (max-width:700px){.pv{padding:8px}.pv-cols,.pv.mob .pv-cols{max-width:none}}
+
+  .savebar{position:sticky;bottom:0;background:var(--bg);border-top:1px solid var(--line);padding:6px 20px 14px;margin:24px -20px 0;z-index:3}
+  .savebar .msg{margin-top:10px}
+</style>
+</head>
+<body>
+<main class="adm">
+  <div class="top"><span class="brand">ADMINISTRACIÓN</span><a href="index.html">← Ver el sitio</a></div>
+  <h1>Gestionar el sitio</h1>
+  <p class="lead">Los cambios se guardan directamente en el sitio y aparecen en línea aproximadamente un minuto después de guardar.</p>
+
+  <!-- CONNEXION -->
+  <section id="login">
+    <h2>Conexión</h2>
+    <div class="row2">
+      <div><label class="f" for="owner">Cuenta de GitHub</label><input id="owner" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+      <div><label class="f" for="repo">Repositorio</label><input id="repo" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+    </div>
+    <label class="f" for="branch">Rama</label><input id="branch" type="text" value="main" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <label class="f" for="token">Token de acceso</label><input id="token" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <label class="check"><input id="remember" type="checkbox"> Recordar el token en este dispositivo</label>
+    <button id="connect">Conectarse</button>
+    <div id="loginMsg" class="msg" role="status"></div>
+    <details>
+      <summary>¿Cómo obtener un token?</summary>
+      <ol>
+        <li>En github.com: foto de perfil → <b>Settings</b> → <b>Developer settings</b> → <b>Personal access tokens</b> → <b>Fine-grained tokens</b> → <b>Generate new token</b>.</li>
+        <li><b>Repository access</b>: «Only select repositories», y elige el repositorio del sitio.</li>
+        <li><b>Permissions</b> → <b>Repository permissions</b> → <b>Contents</b>: «Read and write».</li>
+        <li>Elige una fecha de expiración, confirma y copia el token (solo se muestra una vez).</li>
+      </ol>
+      <p>El token es como una contraseña: no lo compartas. Marca «Recordar» solo en un dispositivo personal.</p>
+    </details>
+  </section>
+
+  <!-- ÉDITION -->
+  <section id="editor" class="hidden">
+    <h2>Categorías y proyectos</h2>
+    <p class="lead" style="margin-bottom:18px">Haz clic en una categoría y luego en un proyecto para editarlo. Los textos se editan haciendo clic sobre ellos. No se aplica nada hasta pulsar «Guardar».</p>
+    <div id="catList"></div>
+    <div class="add-row">
+      <input id="newCat" type="text" placeholder="Nueva categoría" autocomplete="off" aria-label="Nombre de la nueva categoría">
+      <button id="addCat" class="sm" type="button">Añadir</button>
+    </div>
+
+    <details class="fold">
+      <summary><span class="chev" aria-hidden="true">▸</span>Página de inicio</summary>
+      <div class="fold-body">
+        <label class="f">Texto bajo la foto grande</label>
+        <p class="ph-note" style="margin:0">Intro = salto de línea · Ctrl+Intro o clic fuera para confirmar.</p>
+        <div id="heroTitle"></div>
+        <label class="f">Foto grande</label>
+        <div id="heroImg"></div>
+      </div>
+    </details>
+
+    <details class="fold">
+      <summary><span class="chev" aria-hidden="true">▸</span>Sobre mí y contacto</summary>
+      <div class="fold-body">
+        <label class="f">Texto «Sobre mí»</label>
+        <div id="aboutText"></div>
+        <label class="f">Correo de contacto</label>
+        <div id="aboutEmail"></div>
+      </div>
+    </details>
+
+    <details class="fold">
+      <summary><span class="chev" aria-hidden="true">▸</span>Marca de agua</summary>
+      <div class="fold-body">
+        <p class="lead" style="margin-bottom:6px">El logo colocado en la esquina de cada foto del sitio (inicio, galerías, visor).</p>
+        <div id="wmBox"></div>
+      </div>
+    </details>
+
+    <div class="savebar">
+      <button id="save" disabled style="margin-top:12px">Guardar</button><button id="logout" class="ghost" style="margin-top:12px">Cerrar sesión</button>
+      <div id="saveMsg" class="msg" role="status"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const CONN_KEY = "admin-conn";           // compte / dépôt / branche (pas secret)
+  const TOKEN_KEY = "admin-token";         // seulement si « se souvenir » est coché
+  const CONFLICT = "El sitio se modificó en otro lugar mientras tanto. Recarga la página y vuelve a hacer tu cambio.";
+  const MAX_SIDE = 2000, QUALITY = 0.82;   // même réglage que le script de compression
+  const THUMB_SIDE = 400, THUMB_Q = 0.7;   // miniatures utilisées seulement dans l'admin
+  const MED_SIDE = 1500, MED_Q = 0.78;     // version allégée (dossier medium/) utilisée par le site sur mobile et pour les vignettes
+  const FINE = !!(window.matchMedia && window.matchMedia("(pointer: fine)").matches);
+
+  let conn = null;                         // { owner, repo, branch, token }
+  let saved = null;                        // { data, sha } : site.json tel qu'il est sur GitHub
+  let work = null;                         // copie en cours d'édition
+  const pending = new Map();               // chemin -> { blob } : photos à envoyer au prochain enregistrement
+  const pendingThumbs = new Map();         // chemin miniature -> { blob } : miniatures à envoyer
+  const previews = new Map();              // chemin photo -> url locale de la miniature (aperçu immédiat)
+  const ratios = new Map();                // chemin photo -> largeur/hauteur déjà connue (mise en page instantanée à chaque réaffichage)
+  let repoFiles = new Set();               // fichiers déjà présents dans le dépôt
+  let treeKnown = false;                   // true si la liste des fichiers du dépôt a pu être lue
+  let renderGen = 0;                       // sert à abandonner les chargements d'une ancienne vue
+  const ui = { cats: new Set(), projs: new Set(), sel: null, view: null };   // éléments dépliés ; sel = photo sélectionnée au toucher (chemin) ; view = aperçu "desk" (2 colonnes) ou "mob" (1 colonne)
+  const VIEW_KEY = "admin-view";
+  try { const v = localStorage.getItem(VIEW_KEY); if (v === "desk" || v === "mob") ui.view = v; } catch (e) { /* stockage indisponible */ }
+  let resizeImpl = resize;
+  let busy = false;
+
+  /* ---------- utilitaires ---------- */
+  const clone = o => JSON.parse(JSON.stringify(o));
+  const pad = n => String(n).padStart(2, "0");
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  function b64enc(str) {                   // texte UTF-8 (accents) -> base64
+    const bytes = new TextEncoder().encode(str);
+    let bin = ""; bytes.forEach(b => bin += String.fromCharCode(b));
+    return btoa(bin);
+  }
+  function b64dec(b64) {                   // base64 -> texte UTF-8
+    const bin = atob(b64.replace(/\s/g, ""));
+    return new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0)));
+  }
+  async function blobToB64(blob) {         // fichier binaire -> base64
+    const buf = new Uint8Array(await blob.arrayBuffer());
+    let bin = "";
+    for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000));
+    return btoa(bin);
+  }
+  function serialize(data) {               // JSON lisible, listes de photos sur une ligne
+    return JSON.stringify(data, null, 2).replace(/"photos": \[([\s\S]*?)\]/g,
+      (m, inner) => '"photos": [' + (inner.match(/"[^"]*"/g) || []).join(", ") + "]") + "\n";
+  }
+  function say(el, text, kind) { el.textContent = text; el.className = "msg" + (kind ? " " + kind : ""); }
+  function h(tag, attrs, kids) {
+    const e = document.createElement(tag);
+    for (const k in (attrs || {})) {
+      const v = attrs[k];
+      if (v === false || v === null || v === undefined) continue;
+      if (k === "text") e.textContent = v;
+      else if (k === "value") e.value = v;
+      else if (k.slice(0, 2) === "on") e.addEventListener(k.slice(2), v);
+      else e.setAttribute(k, v === true ? "" : v);
+    }
+    (kids || []).forEach(c => { if (c) e.appendChild(c); });   // ignore les null (ex. poignée absente sur mobile)
+    return e;
+  }
+  const btn = (text, aria, fn, disabled, cls) =>
+    h("button", { type: "button", class: "sm " + (cls || ""), "aria-label": aria, text, onclick: fn, disabled: !!disabled });
+  const slugify = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  function unique(base, used) {            // used : ensemble de valeurs en minuscules
+    let v = base, i = 2;
+    while (used.has(v.toLowerCase())) v = `${base}-${i++}`;
+    return v;
+  }
+  const allProjects = d => d.categories.flatMap(c => c.projects);
+  const folders = d => new Set(allProjects(d).map(p => p.folder));
+  const photoPaths = d => {                // toutes les photos du site, grande photo d'accueil comprise
+    const s = new Set(allProjects(d).flatMap(p => p.photos.map(n => `${p.folder}/${n}`)));
+    heroAll(d).forEach(x => s.add(x));
+    return s;
+  };
+  function heroAll(d) {                    // grande photo actuelle + anciennes gardées
+    const hh = d.hero || {};
+    return (hh.image ? [hh.image] : []).concat(Array.isArray(hh.history) ? hh.history : []);
+  }
+  const stamp = () => {                    // 20261010-131500 : sert à nommer les nouveaux fichiers
+    const d = new Date(), z = n => pad(n);
+    return `${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}${z(d.getSeconds())}`;
+  };
+  const HERO_DIR = "head-photo";          // dossier de la grande photo d'accueil (+ head-photo/medium/ pour le mobile)
+  const HERO_SIDE = 2560, HERO_Q = 0.82;  // la grande photo s'affiche sur toute la largeur de l'écran
+  const HERO_MED_SIDE = 1280, HERO_MED_Q = 0.75;   // version mobile de la grande photo (le site la choisit tout seul via srcset)
+  const fmt = n => n >= 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB";
+  const isDirty = () => !!(saved && work) && (serialize(work) !== serialize(saved.data) || pendingThumbs.size > 0);
+  const sibling = (path, dir) => {         // dossier/NOM.png -> dossier/<dir>/NOM.jpg (aussi pour un fichier sans dossier)
+    const i = path.lastIndexOf("/");
+    return path.slice(0, i + 1) + dir + "/" + path.slice(i + 1).replace(/\.[^.]+$/, "") + ".jpg";
+  };
+  const thumbOfPath = path => sibling(path, "thumbs");
+  const mediumOfPath = path => sibling(path, "medium");
+  const derivs = path => [thumbOfPath(path), mediumOfPath(path)];
+  const toggle = (set, k) => set.has(k) ? set.delete(k) : set.add(k);
+  const plural = (n, w) => `${n} ${w}${n > 1 ? "s" : ""}`;
+
+  /* ---------- accès GitHub ---------- */
+  async function gh(method, path, body) {
+    const url = `https://api.github.com/repos/${encodeURIComponent(conn.owner)}/${encodeURIComponent(conn.repo)}/${path}`;
+    for (let attempt = 0; ; attempt++) {
+      let res;
+      try {
+        res = await fetch(url, {
+          method, cache: "no-store",
+          headers: Object.assign({
+            Authorization: `Bearer ${conn.token}`,
+            Accept: "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28"
+          }, body ? { "Content-Type": "application/json" } : {}),
+          body: body ? JSON.stringify(body) : undefined
+        });
+      } catch (e) {
+        throw new Error("No se pudo conectar. Comprueba tu conexión a internet.");
+      }
+      if (res.ok) return res.json();
+      // limite de débit GitHub : on patiente puis on réessaie
+      const hd = res.headers && res.headers.get ? n => res.headers.get(n) : () => null;
+      if ((res.status === 403 || res.status === 429) && attempt < 3 && (hd("retry-after") || hd("x-ratelimit-remaining") === "0")) {
+        const wait = Math.min(60, +hd("retry-after") || 30);
+        say($("saveMsg"), `GitHub pide una breve pausa (${wait} s)…`);
+        await sleep(wait * 1000); continue;
+      }
+      const map = {
+        401: "Token no válido o caducado.",
+        403: "Acceso denegado: el token no tiene el permiso «Contents: Read and write».",
+        404: "Repositorio, rama o archivo no encontrado. Comprueba la cuenta, el repositorio y que el token cubra ese repositorio.",
+        409: CONFLICT,
+        422: CONFLICT
+      };
+      throw new Error(map[res.status] || `Error de GitHub (${res.status}).`);
+    }
+  }
+
+  // Un seul commit : site.json + photos ajoutées + photos/dossiers supprimés.
+  async function commitChanges(c, message, onProgress) {
+    const br = encodeURI(conn.branch);
+    const ref = await gh("GET", `git/ref/heads/${br}`);
+    const headSha = ref.object.sha;
+    const head = await gh("GET", `git/commits/${headSha}`);
+    const treeSha = head.tree.sha;
+    const tree = await gh("GET", `git/trees/${treeSha}?recursive=1`);
+    if (tree.truncated) throw new Error("El repositorio es demasiado grande para esta operación.");
+    const cur = tree.tree.find(t => t.path === "site.json");
+    if (!cur || cur.sha !== saved.sha) throw new Error(CONFLICT);
+
+    const entries = [{ path: "site.json", mode: "100644", type: "blob", content: c.text }];
+    const delPaths = new Set(c.delPaths);
+    let removed = 0;
+    tree.tree.forEach(t => {
+      if (t.type !== "blob") return;
+      if (delPaths.has(t.path) || c.delFolders.some(f => t.path.startsWith(f + "/"))) {
+        entries.push({ path: t.path, mode: "100644", type: "blob", sha: null }); removed++;
+      }
+    });
+    for (let i = 0; i < c.uploads.length; i++) {      // envoi des photos, une par une
+      onProgress && onProgress(i + 1, c.uploads.length);
+      const b = await gh("POST", "git/blobs", { content: await blobToB64(c.uploads[i].blob), encoding: "base64" });
+      entries.push({ path: c.uploads[i].path, mode: "100644", type: "blob", sha: b.sha });
+    }
+    const nt = await gh("POST", "git/trees", { base_tree: treeSha, tree: entries });
+    const nc = await gh("POST", "git/commits", { message, tree: nt.sha, parents: [headSha] });
+    await gh("PATCH", `git/refs/heads/${br}`, { sha: nc.sha });
+    return removed;
+  }
+
+  async function refreshTree() {           // liste des fichiers du dépôt (pour savoir quelles miniatures existent)
+    try {
+      const t = await gh("GET", `git/trees/${encodeURIComponent(conn.branch)}?recursive=1`);
+      if (t.truncated) throw new Error("demasiado grande");
+      repoFiles = new Set(t.tree.filter(x => x.type === "blob").map(x => x.path));
+      treeKnown = true;
+    } catch (e) { repoFiles = new Set(); treeKnown = false; }
+  }
+
+  async function fetchSite() {
+    const f = await gh("GET", `contents/site.json?ref=${encodeURIComponent(conn.branch)}`);
+    if (!f.content) throw new Error("site.json es demasiado grande para esta interfaz.");
+    return { data: JSON.parse(b64dec(f.content)), sha: f.sha };
+  }
+
+  /* ---------- connexion ---------- */
+  async function connect() {
+    conn = {
+      owner: $("owner").value.trim(), repo: $("repo").value.trim(),
+      branch: $("branch").value.trim() || "main", token: $("token").value.trim()
+    };
+    if (!conn.owner || !conn.repo || !conn.token) {
+      say($("loginMsg"), "Rellena la cuenta, el repositorio y el token.", "err"); return;
+    }
+    $("connect").disabled = true; say($("loginMsg"), "Conectando…");
+    try {
+      saved = await fetchSite();
+      await refreshTree();
+      localStorage.setItem(CONN_KEY, JSON.stringify({ owner: conn.owner, repo: conn.repo, branch: conn.branch }));
+      if ($("remember").checked) localStorage.setItem(TOKEN_KEY, conn.token);
+      else localStorage.removeItem(TOKEN_KEY);
+      showEditor();
+    } catch (e) {
+      conn = null; say($("loginMsg"), e.message, "err");
+    }
+    $("connect").disabled = false;
+  }
+
+  function showEditor() {
+    work = clone(saved.data);
+    work.about = work.about || {};
+    $("login").classList.add("hidden");
+    $("editor").classList.remove("hidden");
+    render(); updateSave(); say($("saveMsg"), "");
+  }
+
+  function logout() {
+    localStorage.removeItem(TOKEN_KEY);
+    conn = null; saved = null; work = null;
+    pending.clear(); pendingThumbs.clear();
+    $("token").value = "";
+    $("editor").classList.add("hidden");
+    $("login").classList.remove("hidden");
+    say($("loginMsg"), "");
+  }
+
+  /* ---------- texte fixe, modifiable au clic ---------- */
+  function editable(o) {      // { get, set, label, placeholder, multiline, type, onChange, cls }
+    const box = h("div", { class: "ed " + (o.cls || "") });
+    function view() {
+      const v = o.get();
+      const t = h("div", { class: "ed-view" + (v ? "" : " empty"), tabindex: "0", role: "button",
+        "aria-label": `Editar: ${o.label}`, text: v || o.placeholder || "Haz clic para editar" });
+      t.addEventListener("click", edit);
+      t.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); edit(); } });
+      box.replaceChildren(t);
+    }
+    function edit() {
+      const i = h(o.multiline ? "textarea" : "input", { type: o.multiline ? false : (o.type || "text"), "aria-label": o.label,
+        autocomplete: "off", autocapitalize: "off", spellcheck: o.type === "email" ? "false" : "true" });
+      i.value = o.get();
+      box.replaceChildren(i); i.focus();
+      let done = false;
+      const commit = () => { if (done) return; done = true; o.set(i.value.trim()); view(); o.onChange && o.onChange(); };
+      i.addEventListener("blur", commit);
+      i.addEventListener("keydown", e => {
+        if (e.key === "Escape") { done = true; view(); }
+        else if (e.key === "Enter" && (!o.multiline || e.ctrlKey || e.metaKey)) { e.preventDefault(); commit(); }
+      });
+    }
+    view();
+    return box;
+  }
+
+  /* ---------- glisser-déposer (ordinateur) ; les flèches marchent partout ---------- */
+  let drag = null;
+  function sortableSource(el, arr, index, imageEl) {
+    if (!FINE) return;
+    el.setAttribute("draggable", "true");
+    el.addEventListener("dragstart", e => {
+      drag = { arr, from: index };
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = "move";
+        try { e.dataTransfer.setData("text/plain", "x"); } catch (_) {}
+        if (imageEl && e.dataTransfer.setDragImage) e.dataTransfer.setDragImage(imageEl, 12, 12);
+      }
+    });
+    el.addEventListener("dragend", () => { drag = null; });
+  }
+  function sortableTarget(el, arr, index) {
+    if (!FINE) return;
+    el.addEventListener("dragover", e => { if (drag && drag.arr === arr) { e.preventDefault(); el.classList.add("over"); } });
+    el.addEventListener("dragleave", () => el.classList.remove("over"));
+    el.addEventListener("drop", e => {
+      el.classList.remove("over");
+      if (!drag || drag.arr !== arr) return;
+      e.preventDefault(); e.stopPropagation();
+      const from = drag.from; drag = null;
+      if (from !== index) { const [it] = arr.splice(from, 1); arr.splice(index, 0, it); changed(); }
+    });
+  }
+  function swap(arr, i, d) { const j = i + d; if (j < 0 || j >= arr.length) return; [arr[i], arr[j]] = [arr[j], arr[i]]; }
+
+  /* ---------- édition (en mémoire ; rien n'est envoyé avant « Enregistrer ») ---------- */
+  function updateSave() { $("save").disabled = busy || !isDirty(); }
+  function changed() { render(); updateSave(); say($("saveMsg"), ""); }
+
+  function addCategory(label) {
+    label = (label || "").trim();
+    if (!label) return false;
+    const used = new Set(work.categories.map(c => c.id.toLowerCase()));
+    const id = unique(slugify(label) || "categoria", used);
+    work.categories.push({ id, label, projects: [] });
+    ui.cats.add(id); changed(); return true;
+  }
+  function deleteCategory(ci) {
+    const c = work.categories[ci];
+    if (c.projects.length) { alert("Esta categoría aún contiene proyectos. Elimínalos o muévelos primero."); return; }
+    if (!confirm(`¿Eliminar la categoría «${c.label}»?`)) return;
+    work.categories.splice(ci, 1); changed();
+  }
+  function addProject(ci, title) {
+    title = (title || "").trim();
+    if (!title) return false;
+    const cat = work.categories[ci];
+    const used = new Set(allProjects(work).map(p => p.slug.toLowerCase()));
+    const slug = unique(slugify(title) || "proyecto", used);
+    cat.projects.push({ slug, title, description: "", folder: `${cat.id}/${slug}`, cover: "", photos: [] });
+    ui.cats.add(cat.id); ui.projs.add(slug); changed(); return true;
+  }
+  function dropLocalFiles(prefix) {        // oublie les photos locales d'un projet retiré
+    [pending, pendingThumbs, previews].forEach(m => [...m.keys()].forEach(k => {
+      if (k.startsWith(prefix)) { if (m === previews) URL.revokeObjectURL(m.get(k)); m.delete(k); }
+    }));
+  }
+  function deleteProject(ci, pi) {
+    const p = work.categories[ci].projects[pi];
+    if (!confirm(`¿Quitar el proyecto «${p.title}»?\nSus fotos se eliminarán definitivamente al guardar.`)) return;
+    work.categories[ci].projects.splice(pi, 1);
+    if (!allProjects(work).some(x => x.folder === p.folder)) dropLocalFiles(p.folder + "/");
+    changed();
+  }
+  function moveProject(ci, pi, ti) {
+    const [p] = work.categories[ci].projects.splice(pi, 1);
+    work.categories[ti].projects.push(p); changed();
+  }
+
+  /* ---------- chargement des miniatures : 3 à la fois, avec nouvelles tentatives ---------- */
+  const loadQ = []; let loading = 0;
+  function pump() {
+    while (loading < 3 && loadQ.length) {
+      const job = loadQ.shift();
+      if (job.gen !== renderGen) continue;               // la vue a changé : on abandonne
+      loading++; attempt(job);
+    }
+  }
+  function attempt(job) {
+    const done = () => { loading--; pump(); };
+    job.img.onload = () => { job.box.classList.remove("bad"); done(); if (job.cb && job.cb.ok) job.cb.ok(); };
+    job.img.onerror = () => {
+      done();
+      job.tries++;
+      if (job.tries < 3) { setTimeout(() => { loadQ.push(job); pump(); }, 700 * job.tries); }
+      else if (job.k < job.urls.length - 1) { job.k++; job.tries = 0; loadQ.push(job); pump(); }
+      else { job.box.classList.add("bad"); if (job.cb && job.cb.bad) job.cb.bad(); }   // abandon : clic = réessayer
+    };
+    job.img.src = job.urls[job.k];
+  }
+  function loadImage(img, box, urls, cb) {            // cb : { ok, bad } rappelés quand la photo est chargée / abandonnée
+    const job = { img, box, urls, k: 0, tries: 0, gen: renderGen, cb };
+    box.addEventListener("click", () => {
+      if (!box.classList.contains("bad")) return;
+      job.k = 0; job.tries = 0; job.gen = renderGen; box.classList.remove("bad"); loadQ.push(job); pump();
+    });
+    loadQ.push(job); pump();
+  }
+
+  /* ---------- photos ---------- */
+  function nextPhotoName(p) {              // nom unique, jamais réutilisé (évite les anciennes images en cache)
+    const d = new Date(), z = n => pad(n);
+    const stamp = `${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}${z(d.getSeconds())}`;
+    const used = new Set(p.photos);
+    allProjects(saved.data).filter(q => q.folder === p.folder).forEach(q => q.photos.forEach(n => used.add(n)));
+    pending.forEach((v, path) => used.add(path.slice(path.lastIndexOf("/") + 1)));
+    let name;
+    do { name = `${stamp}-${Math.random().toString(36).slice(2, 5).padEnd(3, "0")}.jpg`; } while (used.has(name));
+    return name;
+  }
+  async function resize(file, maxSide, quality) {   // réduit, JPEG, supprime EXIF/GPS
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await new Promise((ok, ko) => {
+        const i = new Image(); i.onload = () => ok(i); i.onerror = () => ko(new Error("format")); i.src = url;
+      });
+      const s = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.max(1, Math.round(img.naturalWidth * s)), hh = Math.max(1, Math.round(img.naturalHeight * s));
+      const c = document.createElement("canvas"); c.width = w; c.height = hh;
+      const ctx = c.getContext("2d");
+      ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, hh);
+      ctx.imageSmoothingQuality = "high"; ctx.drawImage(img, 0, 0, w, hh);
+      const blob = await new Promise(r => c.toBlob(r, "image/jpeg", quality));
+      if (!blob) throw new Error("encodage");
+      return blob;
+    } finally { URL.revokeObjectURL(url); }
+  }
+  async function addPhotos(p, fileList) {
+    const files = Array.from(fileList || []);
+    if (!files.length || busy) return;
+    busy = true; updateSave();
+    const failed = [];
+    for (let i = 0; i < files.length; i++) {
+      say($("saveMsg"), `Preparando las fotos… ${i + 1}/${files.length}`);
+      try {
+        const blob = await resizeImpl(files[i], MAX_SIDE, QUALITY);
+        const name = nextPhotoName(p), path = `${p.folder}/${name}`;
+        pending.set(path, { blob });
+        let mb = null, tb = null;
+        try { mb = await resizeImpl(blob, MED_SIDE, MED_Q); } catch (e) { /* sans version allégée : le site utilisera la photo complète */ }
+        if (mb) pendingThumbs.set(mediumOfPath(path), { blob: mb });
+        try { tb = await resizeImpl(mb || blob, THUMB_SIDE, THUMB_Q); } catch (e) { /* sans miniature : on affichera la photo */ }
+        if (tb) pendingThumbs.set(thumbOfPath(path), { blob: tb });
+        previews.set(path, URL.createObjectURL(tb || blob));
+        p.photos.push(name);
+      } catch (e) { failed.push(files[i].name || "archivo"); }
+    }
+    busy = false; changed();
+    const ok = files.length - failed.length;
+    if (failed.length) say($("saveMsg"), `${plural(ok, "foto")} añadida${ok > 1 ? "s" : ""}. Omitido (formato no admitido): ${failed.join(", ")}`, "err");
+    else say($("saveMsg"), `${plural(ok, "foto")} lista${ok > 1 ? "s" : ""}. Pulsa «Guardar» para publicarlas.`, "ok");
+  }
+  function removePhoto(p, i) {
+    const name = p.photos[i], path = `${p.folder}/${name}`;
+    if (!confirm(`¿Quitar esta foto (${name})?`)) return;
+    p.photos.splice(i, 1);
+    if (p.cover === name) p.cover = "";
+    if (ui.sel === path) ui.sel = null;
+    pending.delete(path); derivs(path).forEach(d => pendingThumbs.delete(d));
+    if (previews.has(path)) { URL.revokeObjectURL(previews.get(path)); previews.delete(path); }
+    changed();
+  }
+  function missingThumbs(projects) {      // photos en ligne sans miniature et/ou sans version allégée
+    const out = [];
+    projects.forEach(p => p.photos.forEach(name => {
+      const path = `${p.folder}/${name}`, tp = thumbOfPath(path), mp = mediumOfPath(path);
+      if (!treeKnown || !repoFiles.has(path)) return;
+      const needT = !repoFiles.has(tp) && !pendingThumbs.has(tp);
+      const needM = !repoFiles.has(mp) && !pendingThumbs.has(mp);
+      if (needT || needM) out.push({ path, tp, mp, needT, needM });
+    }));
+    return out;
+  }
+  async function generateThumbs(projects) {
+    const jobs = missingThumbs(projects);
+    if (!jobs.length || busy) return;
+    busy = true; updateSave();
+    let done = 0, failed = 0, next = 0;
+    async function worker() {
+      while (next < jobs.length) {
+        const j = jobs[next++];
+        try {
+          const r = await fetch(encodeURI(j.path));
+          if (!r.ok) throw new Error(r.status);
+          const src = await r.blob();
+          let mb = null;
+          if (j.needM) { mb = await resizeImpl(src, MED_SIDE, MED_Q); pendingThumbs.set(j.mp, { blob: mb }); }
+          if (j.needT) {
+            const tb = await resizeImpl(mb || src, THUMB_SIDE, THUMB_Q);
+            pendingThumbs.set(j.tp, { blob: tb });
+            if (previews.has(j.path)) URL.revokeObjectURL(previews.get(j.path));
+            previews.set(j.path, URL.createObjectURL(tb));
+          }
+        } catch (e) { failed++; }
+        done++; say($("saveMsg"), `Creando las versiones ligeras… ${done}/${jobs.length}`);
+      }
+    }
+    await Promise.all(Array.from({ length: FINE ? 3 : 1 }, worker));   // 1 seule à la fois sur téléphone (mémoire)
+    busy = false; changed();
+    const ok = jobs.length - failed;
+    say($("saveMsg"), failed
+      ? `${plural(ok, "foto")} aligerada${ok > 1 ? "s" : ""}, ${failed} con error. Pulsa «Guardar» para publicar las que están listas.`
+      : `${plural(ok, "foto")} aligerada${ok > 1 ? "s" : ""}. Pulsa «Guardar» para publicarlas.`, failed ? "err" : "ok");
+  }
+  function setCover(p, i) { p.cover = p.photos[i]; changed(); }
+
+  /* ---------- couverture : miniature en haut du projet déplié ---------- */
+  function coverBlock(p) {
+    const name = p.cover || p.photos[0];
+    if (!name) return null;
+    const path = `${p.folder}/${name}`, tp = thumbOfPath(path);
+    const src = previews.get(path) || encodeURI(repoFiles.has(tp) ? tp : path);
+    const where = p.cover ? `Foto ${pad(p.photos.indexOf(name) + 1)}` : "Por defecto: la 1.ª foto";
+    const how = FINE ? "Para cambiarla, pasa el cursor sobre una foto de la vista previa de abajo y haz clic en ★."
+                     : "Para cambiarla, toca una foto de la vista previa de abajo y luego ★.";
+    return h("div", { class: "cover-box" }, [
+      h("label", { class: "f", text: "Portada" }),
+      h("div", { class: "cover-row" }, [
+        h("img", { class: "cover-img", alt: `Portada del proyecto (${name})`, src, decoding: "async" }),
+        h("p", { class: "meta", text: `${where}. ${how}` })
+      ])
+    ]);
+  }
+
+  /* ---------- photos d'un projet : l'aperçu de la page sert d'éditeur ---------- */
+  function photoSection(p) {
+    const wrap = h("div", {});
+    const input = h("input", { type: "file", accept: "image/*", multiple: true, class: "hidden", "aria-label": "Elegir fotos" });
+    input.addEventListener("change", () => { addPhotos(p, input.files); input.value = ""; });
+    wrap.appendChild(h("div", { class: "ph-bar" }, [
+      h("span", { class: "lbl", text: `Fotos · ${p.photos.length}` }),
+      btn("+ Añadir fotos", "Añadir fotos", () => input.click())
+    ]));
+    wrap.appendChild(input);
+    const how = FINE
+      ? "Arrastra una foto al lugar donde quieras colocarla (la línea negra muestra dónde irá). Suelta fotos desde tu computadora para añadirlas. Pasa el cursor sobre una foto para ponerla como portada (★) o quitarla (✕). La vista «Móvil» muestra una sola columna, como en un teléfono: el orden es el mismo en las dos vistas. "
+      : "Toca una foto para seleccionarla y usa la barra de arriba de la vista previa: ← → para moverla una posición, la lista «Posición» para enviarla directamente a otro lugar, ★ para la portada, ✕ para quitarla. La vista «Escritorio» muestra 2 columnas: el orden es el mismo en las dos vistas. ";
+    wrap.appendChild(h("p", { class: "ph-note", text: how + "Las fotos se reducen a 2000 px y se eliminan sus metadatos (incluido el GPS) antes del envío." }));
+    const miss = missingThumbs([p]);
+    if (miss.length) wrap.appendChild(h("div", { class: "gen" }, [
+      h("span", { text: `${plural(miss.length, "foto")} sin versión ligera (miniatura del admin + versión móvil del sitio). ` }),
+      btn("Crear las versiones ligeras", "Crear las versiones ligeras de este proyecto", () => generateThumbs([p]))
+    ]));
+    wrap.appendChild(photoBoard(p));
+    return wrap;
+  }
+
+  const boards = new Set();                                    // aperçus affichés : changer de vue ou de sélection les met tous à jour
+  const curView = () => ui.view || (FINE ? "desk" : "mob");    // desk = 2 colonnes (site sur ordinateur), mob = 1 colonne (site sur téléphone)
+  function setView(v) {
+    ui.view = v;
+    try { localStorage.setItem(VIEW_KEY, v); } catch (e) { /* stockage indisponible */ }
+    boards.forEach(bd => bd.refresh());
+  }
+  function selectPhoto(path) { ui.sel = path; boards.forEach(bd => bd.sync()); }   // toucher : (dés)sélectionne une photo
+
+  // L'aperçu de la page = l'éditeur. Deux vues (ordinateur : 2 colonnes, mobile : 1 colonne) qui partagent le même ordre,
+  // modifiables l'une comme l'autre : glisser-déposer avec une souris, barre de boutons + liste « Position » au toucher.
+  // Un déplacement ne redessine que l'aperçu (les images ne sont pas rechargées).
+  function photoBoard(p) {
+    const box = h("div", { class: "pv" + (FINE ? " fine" : "") });
+    const segBtn = {};
+    const head = h("div", { class: "pv-head" }, [
+      h("span", { class: "lbl", text: "Vista previa" }),
+      h("div", { class: "seg", role: "group", "aria-label": "Tipo de vista previa" }, [
+        segBtn.desk = btn("Escritorio", "Vista de escritorio: 2 columnas", () => setView("desk"), false, "plain"),
+        segBtn.mob = btn("Móvil", "Vista móvil: 1 columna", () => setView("mob"), false, "plain")
+      ])
+    ]);
+    const note = h("p", { class: "ph-note", style: "margin:0 0 10px" });
+    const area = h("div", { class: "pv-cols" });
+    const pathOf = n => `${p.folder}/${n}`;
+    const items = new Map();                                   // nom de photo -> { fig, img, ratio, state, … }
+    const clearMarks = () => items.forEach(it => it.fig.classList.remove("mk-before", "mk-after", "dragging"));
+    const selName = () => {                                    // photo sélectionnée dans CE projet (ou null)
+      const pre = p.folder + "/";
+      const n = ui.sel && ui.sel.startsWith(pre) ? ui.sel.slice(pre.length) : null;
+      return n && p.photos.includes(n) ? n : null;
+    };
+
+    function reordered() { draw(); updateSave(); say($("saveMsg"), ""); }
+    function moveTo(name, to, block) {                         // place la photo à la position `to` (0 = première)
+      const i = p.photos.indexOf(name);
+      if (i < 0 || to < 0 || to >= p.photos.length || to === i) return;
+      p.photos.splice(i, 1); p.photos.splice(to, 0, name);
+      reordered();
+      items.get(name).fig.scrollIntoView({ block: block || "nearest", behavior: "smooth" });
+    }
+    const move = (name, d) => moveTo(name, p.photos.indexOf(name) + d, "nearest");
+    const makeCover = name => setCover(p, p.photos.indexOf(name));
+    const dropPhoto = name => removePhoto(p, p.photos.indexOf(name));
+    const tip = (b, t) => { b.title = t; return b; };
+
+    /* --- toucher : barre de la photo sélectionnée (reste en haut de l'écran) --- */
+    let bar = null, syncBar = () => {};
+    if (!FINE) {
+      const sel = () => selName();
+      const bTitle = h("span", { class: "pv-sel-t" });
+      const bClose = btn("Cerrar", "Deseleccionar la foto", () => selectPhoto(null), false, "plain");
+      const bP = tip(btn("←", "Retroceder una posición", () => sel() && move(sel(), -1), false, "plain"), "Retroceder una posición");
+      const bN = tip(btn("→", "Avanzar una posición", () => sel() && move(sel(), 1), false, "plain"), "Avanzar una posición");
+      const bC = tip(btn("★", "Definir como portada", () => sel() && makeCover(sel()), false, "plain"), "Portada");
+      const bD = tip(btn("✕", "Quitar la foto", () => sel() && dropPhoto(sel()), false, "danger"), "Quitar la foto");
+      const pos = h("select", { "aria-label": "Mover a la posición",
+        onchange: e => { const n = sel(); if (n) moveTo(n, +e.target.value, "center"); } },
+        p.photos.map((_, i) => h("option", { value: String(i), text: `Posición ${pad(i + 1)}` })));
+      bar = h("div", { class: "pv-sel" }, [
+        h("div", { class: "pv-sel-top" }, [bTitle, bClose]),
+        h("div", { class: "pv-sel-ctl" }, [bP, bN, pos, bC, bD])
+      ]);
+      syncBar = () => {                                        // hauteur constante : pas de saut de page quand on sélectionne
+        const n = sel(), i = n ? p.photos.indexOf(n) : -1, on = i >= 0;
+        const isCover = on && n === (p.cover || p.photos[0]);
+        bTitle.textContent = on ? `Foto ${pad(i + 1)} de ${pad(p.photos.length)}${isCover ? " · portada" : ""}` : "Toca una foto para seleccionarla";
+        [bClose, bP, bN, bC, bD, pos].forEach(x => { x.disabled = !on; });
+        if (!on) return;
+        bP.disabled = i === 0; bN.disabled = i === p.photos.length - 1;
+        bC.disabled = isCover; bC.classList.toggle("on", isCover);
+        pos.value = String(i);
+      };
+    }
+
+    function makeItem(name) {
+      const path = pathOf(name), known = ratios.get(path);
+      const img = h("img", { alt: name, decoding: "async", draggable: "false" });
+      const no = h("span", { class: "pv-no" });
+      const bd = h("span", { class: "pv-bd" });
+      const kids = [img, no, bd];
+      const it = { name, path, img, no, bd, ratio: known || 1.5, state: known ? "ok" : "wait" };
+      if (FINE) {                                              // souris : boutons au survol de la photo
+        it.bPrev = tip(btn("←", "Retroceder una posición", () => move(name, -1)), "Retroceder una posición");
+        it.bNext = tip(btn("→", "Avanzar una posición", () => move(name, 1)), "Avanzar una posición");
+        it.bCover = tip(btn("★", "Definir como portada", () => makeCover(name)), "Portada");
+        const bDel = tip(btn("✕", "Quitar la foto", () => dropPhoto(name), false, "danger"), "Quitar la foto");
+        kids.push(h("div", { class: "pv-bar" }, [it.bPrev, it.bNext, it.bCover, bDel]));
+      }
+      const fig = it.fig = h("figure", { class: "pv-it", tabindex: "0" }, kids);
+      fig.style.aspectRatio = String(it.ratio);
+
+      const ok = () => {
+        it.ratio = (img.naturalWidth / img.naturalHeight) || 1.5; ratios.set(path, it.ratio);
+        fig.style.aspectRatio = String(it.ratio);
+        const was = it.state; it.state = "ok";
+        if (was !== "ok") draw();                              // ratio nouveau : on (re)calcule les colonnes
+      };
+      const bad = () => { if (it.state === "wait") { it.state = "bad"; draw(); } };
+      if (previews.has(path)) { img.onload = ok; img.onerror = bad; img.src = previews.get(path); }
+      else {
+        const tp = thumbOfPath(path), full = encodeURI(path);
+        loadImage(img, fig, repoFiles.has(tp) ? [encodeURI(tp), full] : [full], { ok, bad });
+      }
+
+      if (!FINE) fig.addEventListener("click", e => {          // toucher : sélectionner cette photo
+        if (e.target.closest("button") || fig.classList.contains("bad")) return;
+        selectPhoto(ui.sel === path ? null : path);
+      });
+      if (FINE) {                                              // souris : glisser-déposer sur l'aperçu (2 colonnes ou 1 colonne)
+        fig.setAttribute("draggable", "true");
+        fig.addEventListener("dragstart", e => {
+          drag = { arr: p.photos, from: p.photos.indexOf(name) };
+          if (e.dataTransfer) {
+            e.dataTransfer.effectAllowed = "move";
+            try { e.dataTransfer.setData("text/plain", "x"); } catch (_) {}
+            if (e.dataTransfer.setDragImage) e.dataTransfer.setDragImage(img, 16, 16);
+          }
+          setTimeout(() => fig.classList.add("dragging"), 0);
+        });
+        fig.addEventListener("dragend", () => { drag = null; clearMarks(); });
+        fig.addEventListener("dragover", e => {
+          if (!drag || drag.arr !== p.photos) return;
+          e.preventDefault();
+          const to = p.photos.indexOf(name);
+          items.forEach(x => x.fig.classList.remove("mk-before", "mk-after"));
+          if (to !== drag.from) fig.classList.add(to > drag.from ? "mk-after" : "mk-before");
+        });
+        fig.addEventListener("dragleave", e => { if (!fig.contains(e.relatedTarget)) fig.classList.remove("mk-before", "mk-after"); });
+        fig.addEventListener("drop", e => {
+          if (!drag || drag.arr !== p.photos) return;          // fichier venant de l'ordinateur : géré plus bas
+          e.preventDefault(); e.stopPropagation();
+          const from = drag.from, to = p.photos.indexOf(name);
+          drag = null; clearMarks();
+          if (from !== to) { const [n] = p.photos.splice(from, 1); p.photos.splice(to, 0, n); reordered(); }
+        });
+      }
+      return it;
+    }
+
+    function sync() {                                          // sélection (toucher) : surbrillance + barre
+      const cur = selName();
+      items.forEach(it => it.fig.classList.toggle("sel", !FINE && it.name === cur));
+      syncBar();
+    }
+    function draw() {
+      const order = p.photos.map(n => items.get(n));
+      const eff = p.cover || p.photos[0];
+      order.forEach((it, i) => {
+        it.no.textContent = pad(i + 1);
+        const isNew = pending.has(it.path), isCover = it.name === eff;
+        it.bd.replaceChildren(...[isNew && h("span", { class: "new", text: "Nuevo" }), isCover && h("span", { text: "Portada" })].filter(Boolean));
+        if (it.bPrev) {
+          it.bPrev.disabled = i === 0; it.bNext.disabled = i === order.length - 1;
+          it.bCover.disabled = isCover; it.bCover.classList.toggle("on", isCover);
+        }
+      });
+      // comme site.js : on place les photos prêtes, dans l'ordre et sans trou ; les autres arrivent au fil du chargement
+      let k = 0;
+      while (k < order.length && order[k].state !== "wait") k++;
+      const done = k === order.length;
+      note.hidden = done;
+      if (!done) note.textContent = `Cargando la vista previa… ${k}/${order.length}`;
+      const shown = order.slice(0, k);
+      const cols = splitColumns(shown.map(it => it.ratio), curView() === "mob" ? 1 : 2, done);
+      area.replaceChildren(...cols.map(c => h("div", { class: "pv-col" }, c.map(i => shown[i].fig))));
+      sync();
+    }
+    function refresh() {                                       // changement de vue ordinateur / mobile
+      const v = curView();
+      box.classList.toggle("mob", v === "mob");
+      segBtn.desk.setAttribute("aria-pressed", String(v === "desk"));
+      segBtn.mob.setAttribute("aria-pressed", String(v === "mob"));
+      draw();
+    }
+
+    // dépôt de fichiers depuis l'ordinateur, n'importe où sur l'aperçu
+    const hasFiles = e => !drag && e.dataTransfer && Array.from(e.dataTransfer.types || []).includes("Files");
+    box.addEventListener("dragover", e => { if (hasFiles(e)) { e.preventDefault(); box.classList.add("drop"); } });
+    box.addEventListener("dragleave", e => { if (!box.contains(e.relatedTarget)) box.classList.remove("drop"); });
+    box.addEventListener("drop", e => {
+      box.classList.remove("drop");
+      if (!drag && e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) { e.preventDefault(); addPhotos(p, e.dataTransfer.files); }
+    });
+
+    if (!p.photos.length) {
+      box.appendChild(h("div", { class: "pv-empty", text: FINE
+        ? "Aún no hay fotos. Suelta fotos aquí o usa «+ Añadir fotos»."
+        : "Aún no hay fotos. Usa «+ Añadir fotos»." }));
+      return box;
+    }
+    box.appendChild(head);
+    if (bar) box.appendChild(bar);
+    box.appendChild(note); box.appendChild(area);
+    p.photos.forEach(name => items.set(name, makeItem(name)));
+    boards.add({ sync, refresh });
+    refresh();
+    return box;
+  }
+
+  /* ---------- affichage ---------- */
+  function render() {
+    renderGen++; loadQ.length = 0; boards.clear();
+    const box = $("catList"); box.replaceChildren();
+    const missAll = missingThumbs(allProjects(work));
+    if (missAll.length) box.appendChild(h("div", { class: "gen" }, [
+      h("span", { text: `${plural(missAll.length, "foto")} sin versión ligera: el sitio carga las fotos a tamaño completo (lento en el móvil) y el admin va lento. Basta hacerlo una vez, preferiblemente desde una computadora.` }),
+      h("div", {}, [btn("Crear todas las versiones ligeras", "Crear las versiones ligeras que faltan de todos los proyectos", () => generateThumbs(allProjects(work)))])
+    ]));
+    const cats = work.categories;
+    cats.forEach((cat, ci) => {
+      const open = ui.cats.has(cat.id);
+      const handle = FINE ? h("span", { class: "handle", title: "Arrastrar para reordenar", "aria-hidden": "true", text: "⠿" }) : null;
+      const head = h("div", { class: "head" }, [
+        h("button", { type: "button", class: "tgl", "aria-expanded": String(open), onclick: () => { toggle(ui.cats, cat.id); render(); } }, [
+          h("span", { class: "chev", text: open ? "▾" : "▸" }),
+          h("span", { class: "t", text: cat.label || "(sin nombre)" }),
+          h("span", { class: "n", text: plural(cat.projects.length, "proyecto") })
+        ]),
+        handle,
+        btn("↑", "Subir la categoría", () => { swap(cats, ci, -1); changed(); }, ci === 0),
+        btn("↓", "Bajar la categoría", () => { swap(cats, ci, 1); changed(); }, ci === cats.length - 1)
+      ]);
+      if (handle) sortableSource(handle, cats, ci, head);
+      sortableTarget(head, cats, ci);
+      const card = h("div", { class: "acc" }, [head]);
+
+      if (open) {
+        const body = h("div", { class: "body" });
+        body.appendChild(h("label", { class: "f", text: "Nombre de la categoría" }));
+        body.appendChild(editable({ label: "nombre de la categoría", cls: "big", get: () => cat.label, set: v => { cat.label = v; }, onChange: changed, placeholder: "Nombre de la categoría" }));
+        body.appendChild(h("div", { class: "btns" }, [btn("Eliminar la categoría", "Eliminar la categoría", () => deleteCategory(ci), false, "danger")]));
+        card.appendChild(body);
+
+        cat.projects.forEach((p, pi) => {
+          const pOpen = ui.projs.has(p.slug);
+          const ph = FINE ? h("span", { class: "handle", title: "Arrastrar para reordenar", "aria-hidden": "true", text: "⠿" }) : null;
+          const phead = h("div", { class: "head" }, [
+            h("button", { type: "button", class: "tgl", "aria-expanded": String(pOpen), onclick: () => { toggle(ui.projs, p.slug); render(); } }, [
+              h("span", { class: "chev", text: pOpen ? "▾" : "▸" }),
+              h("span", { class: "t", text: p.title || "(sin título)" }),
+              h("span", { class: "n", text: plural(p.photos.length, "foto") })
+            ]),
+            ph,
+            btn("↑", "Subir el proyecto", () => { swap(cat.projects, pi, -1); changed(); }, pi === 0),
+            btn("↓", "Bajar el proyecto", () => { swap(cat.projects, pi, 1); changed(); }, pi === cat.projects.length - 1)
+          ]);
+          if (ph) sortableSource(ph, cat.projects, pi, phead);
+          sortableTarget(phead, cat.projects, pi);
+          const sub = h("div", { class: "acc sub" }, [phead]);
+
+          if (pOpen) {
+            const pb = h("div", { class: "body" });
+            const cv = coverBlock(p);
+            if (cv) pb.appendChild(cv);
+            pb.appendChild(h("label", { class: "f", text: "Título" }));
+            pb.appendChild(editable({ label: "título del proyecto", cls: "big", get: () => p.title, set: v => { p.title = v; }, onChange: changed, placeholder: "Título del proyecto" }));
+            pb.appendChild(h("label", { class: "f", text: "Descripción (opcional)" }));
+            pb.appendChild(editable({ label: "descripción del proyecto", multiline: true, get: () => p.description || "", set: v => { p.description = v; }, onChange: updateSave, placeholder: "Añadir una descripción…" }));
+            pb.appendChild(h("div", { class: "meta", text: `Carpeta: ${p.folder}` }));
+            pb.appendChild(photoSection(p));
+            const row = h("div", { class: "btns" });
+            const others = cats.map((c, i) => ({ c, i })).filter(x => x.i !== ci);
+            if (others.length) {
+              row.appendChild(h("select", { "aria-label": "Mover a otra categoría",
+                onchange: e => { if (e.target.value !== "") moveProject(ci, pi, +e.target.value); } },
+                [h("option", { value: "", text: "Mover a…" })].concat(others.map(x => h("option", { value: String(x.i), text: x.c.label })))));
+            }
+            row.appendChild(btn("Eliminar el proyecto", "Eliminar el proyecto", () => deleteProject(ci, pi), false, "danger"));
+            pb.appendChild(row);
+            sub.appendChild(pb);
+          }
+          card.appendChild(sub);
+        });
+
+        const input = h("input", { type: "text", placeholder: "Nuevo proyecto en esta categoría", autocomplete: "off", "aria-label": "Título del nuevo proyecto" });
+        const add = () => { if (!addProject(ci, input.value)) input.focus(); };
+        input.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); add(); } });
+        card.appendChild(h("div", { class: "body" }, [h("div", { class: "add-row" }, [input, btn("Añadir", "Añadir el proyecto", add)])]));
+      }
+      box.appendChild(card);
+    });
+    $("aboutText").replaceChildren(editable({ label: "texto Sobre mí", multiline: true, get: () => work.about.text || "", set: v => { work.about.text = v; }, onChange: updateSave, placeholder: "Añadir un texto…" }));
+    $("aboutEmail").replaceChildren(editable({ label: "correo de contacto", type: "email", get: () => work.about.email || "", set: v => { work.about.email = v; }, onChange: updateSave, placeholder: "Añadir un correo…" }));
+    $("wmBox").replaceChildren(watermarkSection());
+    $("heroTitle").replaceChildren(editable({ label: "texto de la página de inicio", multiline: true, cls: "big",
+      get: () => (work.hero && typeof work.hero.title === "string") ? work.hero.title : "",
+      set: v => { work.hero = Object.assign({}, work.hero, { title: v }); },
+      onChange: updateSave, placeholder: "Sin texto (haz clic para añadir)" }));
+    $("heroImg").replaceChildren(heroSection());
+  }
+
+  /* ---------- page d'accueil : grande photo ---------- */
+  const heroSrc = path => previews.get(path) || encodeURI(path);
+  const heroThumb = path => previews.get(path) || encodeURI(repoFiles.has(thumbOfPath(path)) ? thumbOfPath(path) : path);
+  const heroHistory = () => (work.hero && Array.isArray(work.hero.history)) ? work.hero.history : [];
+  function setHeroState(image, history) {
+    work.hero = Object.assign({}, work.hero, { image: image || "", history });
+    if (!history.length) delete work.hero.history;
+  }
+  function forgetLocal(path) {             // photo choisie puis abandonnée avant tout enregistrement
+    pending.delete(path); derivs(path).forEach(d => pendingThumbs.delete(d));
+    if (previews.has(path)) { URL.revokeObjectURL(previews.get(path)); previews.delete(path); }
+  }
+  // La photo actuelle est « à optimiser » si elle n'est pas dans head-photo/ ou n'a pas encore sa version mobile.
+  function heroNeedsOptimizing(cur) {
+    if (!cur || pending.has(cur)) return false;
+    return !cur.startsWith(HERO_DIR + "/") || (treeKnown && !repoFiles.has(mediumOfPath(cur)));
+  }
+  function heroSection() {
+    const cur = work.hero && work.hero.image, hist = heroHistory();
+    const input = h("input", { type: "file", accept: "image/*", class: "hidden", "aria-label": "Elegir la foto grande" });
+    input.addEventListener("change", () => { replaceHero(input.files[0]); input.value = ""; });
+    const pic = cur ? h("img", { class: "hero-pv", alt: "Foto grande actual", src: heroSrc(cur) })
+                    : h("div", { class: "hero-pv none" });
+    const pend = cur && pending.get(cur);
+    const box = h("div", {}, [pic, input,
+      h("div", { class: "meta", text: cur ? `Archivo: ${cur}${pend ? ` · ${fmt(pend.blob.size)} (nueva, aún sin guardar)` : ""}` : "Sin foto" }),
+      h("div", { class: "btns", style: "margin-top:12px" }, [btn("Cambiar la foto", "Cambiar la foto grande del inicio", () => input.click())]),
+      h("p", { class: "ph-note", text: `La foto se comprime (${HERO_SIDE} px como máximo), se crea automáticamente una versión móvil (${HERO_MED_SIDE} px) y todo se guarda en la carpeta ${HERO_DIR}/. Se eliminan los metadatos (incluido el GPS).` })
+    ]);
+    if (heroNeedsOptimizing(cur)) box.appendChild(h("div", { class: "gen" }, [
+      h("span", { text: cur.startsWith(HERO_DIR + "/")
+        ? "Esta foto no tiene versión móvil: en el teléfono se descarga a tamaño grande. "
+        : `Esta foto no está en ${HERO_DIR}/ y no está comprimida ni adaptada al móvil. ` }),
+      btn("Optimizar la foto actual", "Comprimir la foto actual y guardarla en head-photo", optimizeHero)
+    ]));
+    if (hist.length) {
+      box.appendChild(h("label", { class: "f", style: "margin-top:26px", text: `Fotos anteriores · ${hist.length}` }));
+      box.appendChild(h("p", { class: "ph-note", style: "margin-top:0", text: "Se conservan en el repositorio pero no se muestran en el sitio. «Usar» vuelve a poner una foto en el inicio (la foto actual pasa entonces a esta lista)." }));
+      box.appendChild(h("div", { class: "grid hero-hist" }, hist.map(path => h("div", { class: "tile" }, [
+        h("div", { class: "im" }, [h("img", { alt: path, src: heroThumb(path), decoding: "async" })]),
+        h("div", { class: "tb" }, [
+          btn("Usar", "Volver a poner esta foto en el inicio", () => useHero(path)),
+          btn("✕", "Eliminar definitivamente esta foto anterior", () => dropHero(path), false, "danger")
+        ])
+      ]))));
+    }
+    return box;
+  }
+  function useHero(path) {
+    const cur = work.hero && work.hero.image;
+    const hist = heroHistory().filter(x => x !== path);
+    if (cur) hist.unshift(cur);
+    setHeroState(path, hist); changed();
+  }
+  function dropHero(path) {
+    if (!confirm(`¿Eliminar definitivamente esta foto anterior (${path})?\nSe borrará del repositorio al guardar.`)) return;
+    setHeroState(work.hero.image, heroHistory().filter(x => x !== path));
+    forgetLocal(path); changed();
+  }
+  // Compresse la photo (2560 px) + crée la version mobile (1280 px) + une miniature, dans head-photo/.
+  // opts.dropOld : l'ancienne photo est supprimée au lieu d'être gardée dans les anciennes (cas « optimiser »).
+  async function replaceHero(file, opts) {
+    opts = opts || {};
+    if (!file || busy) return;
+    busy = true; updateSave(); say($("saveMsg"), "Comprimiendo la foto…");
+    let path = null;
+    try {
+      const blob = await resizeImpl(file, HERO_SIDE, HERO_Q);
+      path = `${HERO_DIR}/${stamp()}-${Math.random().toString(36).slice(2, 5).padEnd(3, "0")}.jpg`;
+      pending.set(path, { blob });
+      let mb = null;
+      try { mb = await resizeImpl(blob, HERO_MED_SIDE, HERO_MED_Q); pendingThumbs.set(mediumOfPath(path), { blob: mb }); } catch (e) { /* sans version mobile : le site retombera sur la grande photo */ }
+      try { pendingThumbs.set(thumbOfPath(path), { blob: await resizeImpl(mb || blob, THUMB_SIDE, THUMB_Q) }); } catch (e) { /* sans miniature : on affichera la photo */ }
+      previews.set(path, URL.createObjectURL(blob));
+      const old = work.hero && work.hero.image;
+      const hist = heroHistory().slice();
+      if (old && pending.has(old)) forgetLocal(old);    // jamais publiée : inutile de la garder
+      else if (old && !opts.dropOld) hist.unshift(old); // déjà en ligne : on la garde dans les anciennes
+      setHeroState(path, hist);
+      busy = false; changed();
+      say($("saveMsg"), `Foto comprimida${file.size ? `: ${fmt(file.size)} → ${fmt(blob.size)}` : ""}${mb ? ` (versión móvil: ${fmt(mb.size)})` : ""}. Pulsa «Guardar» para publicarla.`, "ok");
+    } catch (e) {
+      if (path) forgetLocal(path);
+      busy = false; updateSave(); say($("saveMsg"), "Este formato de imagen no es compatible.", "err");
+    }
+  }
+  async function optimizeHero() {
+    const cur = work.hero && work.hero.image;
+    if (!cur || busy) return;
+    say($("saveMsg"), "Descargando la foto actual…");
+    let src;
+    try {
+      const r = await fetch(encodeURI(cur), { cache: "no-store" });
+      if (!r.ok) throw new Error(r.status);
+      src = await r.blob();
+    } catch (e) { say($("saveMsg"), "No se pudo leer la foto actual. Comprueba tu conexión e inténtalo de nuevo.", "err"); return; }
+    await replaceHero(src, { dropOld: true });
+  }
+
+  /* ---------- aperçu de la page d'un projet (même calcul que site.js) ---------- */
+  const GAP = 0.05;
+  function splitColumns(ratios, n, final) {
+    const cols = Array.from({ length: n }, () => []), hts = new Array(n).fill(0);
+    ratios.forEach((r, i) => {
+      let c = 0;
+      for (let k = 1; k < n; k++) if (hts[k] < hts[c] - 1e-6) c = k;
+      cols[c].push(i); hts[c] += 1 / r + GAP;
+    });
+    if (final && n === 2 && hts[1] > hts[0] + 1e-6 && cols[1].length > 1) cols[0].push(cols[1].pop());
+    return cols;
+  }
+
+  /* ---------- filigrane ---------- */
+  const WM_DEFAULT = { enabled: false, color: "light", size: "m", position: "right", opacity: 0.8 };
+  // logo « œil CPG » : dessiné par le CSS (variable --mark dans style.css), couleur = currentColor
+  const MARK_SVG = '<span class="wm-img"></span>';
+  const wmGet = () => Object.assign({}, WM_DEFAULT, work.watermark || {});
+  function wmSet(k, v) { work.watermark = Object.assign(wmGet(), { [k]: v }); updateSave(); say($("saveMsg"), ""); }
+  function watermarkSection() {
+    const w = wmGet();
+    const mark = h("span", { "aria-hidden": "true" });
+    mark.innerHTML = MARK_SVG;
+    const wrap = h("div", { class: "wm-wrap" }, [h("div", { class: "wm-prev" }), mark]);
+    const box = h("div", {});
+    const paint = () => {
+      const c = wmGet();
+      mark.className = ["wm", c.color === "dark" ? "dark" : "light", c.size, c.position === "left" ? "left" : "right"].join(" ");
+      mark.style.opacity = c.opacity;
+      box.classList.toggle("wm-off", !c.enabled);
+    };
+    const sel = (label, key, opts) => h("div", {}, [
+      h("label", { class: "f", text: label }),
+      h("select", { "aria-label": label, onchange: e => { wmSet(key, e.target.value); paint(); } },
+        opts.map(([v, t]) => h("option", { value: v, text: t, selected: w[key] === v })))
+    ]);
+    const pct = h("span", { text: ` · ${Math.round(w.opacity * 100)} %` });
+    const range = h("input", { type: "range", min: "0.2", max: "1", step: "0.05", value: String(w.opacity), "aria-label": "Opacidad de la marca de agua" });
+    range.addEventListener("input", () => { wmSet("opacity", +range.value); pct.textContent = ` · ${Math.round(range.value * 100)} %`; paint(); });
+    const chk = h("input", { type: "checkbox", checked: !!w.enabled });
+    chk.addEventListener("change", () => { wmSet("enabled", chk.checked); paint(); });
+    box.append(
+      h("label", { class: "check" }, [chk, h("span", { text: "Mostrar la marca de agua en las fotos" })]),
+      h("div", { class: "wm-set" }, [
+        sel("Color", "color", [["light", "Blanco"], ["dark", "Negro"]]),
+        sel("Tamaño", "size", [["s", "Pequeño"], ["m", "Mediano"], ["l", "Grande"]]),
+        sel("Posición", "position", [["right", "Abajo a la derecha"], ["left", "Abajo a la izquierda"]]),
+        h("div", {}, [h("label", { class: "f" }, [h("span", { text: "Opacidad" }), pct]), range])
+      ]),
+      h("div", { class: "wm-prev-box" }, [h("label", { class: "f", text: "Vista previa" }), wrap])
+    );
+    paint();
+    return box;
+  }
+
+  /* ---------- enregistrement ---------- */
+  async function save() {
+    if (busy) return;
+    const email = (work.about.email || "").trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { say($("saveMsg"), "La dirección de correo no parece válida.", "err"); return; }
+    if (work.categories.some(c => !c.label.trim())) { say($("saveMsg"), "Una categoría no tiene nombre.", "err"); return; }
+    if (allProjects(work).some(p => !p.title.trim())) { say($("saveMsg"), "Un proyecto no tiene título.", "err"); return; }
+
+    const keptFolders = folders(work), keptPaths = photoPaths(work);
+    const delFolders = [...folders(saved.data)].filter(f => !keptFolders.has(f));
+    const removedPhotos = [...photoPaths(saved.data)].filter(p => !keptPaths.has(p) && !delFolders.some(f => p.startsWith(f + "/")));
+    const delPaths = removedPhotos.concat(removedPhotos.filter(x => x.includes("/")).flatMap(derivs));
+    const oldHeroes = new Set(heroAll(saved.data));
+    const heroGone = removedPhotos.filter(x => oldHeroes.has(x));
+    const removedCount = removedPhotos.length - heroGone.length;
+    const keptThumbs = new Set([...keptPaths].flatMap(derivs));
+    const photoUploads = [...pending.entries()].filter(([path]) => keptPaths.has(path)).map(([path, v]) => ({ path, blob: v.blob }));
+    const uploads = photoUploads.concat([...pendingThumbs.entries()].filter(([path]) => keptThumbs.has(path)).map(([path, v]) => ({ path, blob: v.blob })));
+
+    if (delFolders.length || removedPhotos.length) {
+      const names = saved.data.categories.flatMap(c => c.projects).filter(p => delFolders.includes(p.folder)).map(p => `• proyecto «${p.title}» y todas sus fotos`);
+      if (removedCount) names.push(`• ${plural(removedCount, "foto")} quitada${removedCount > 1 ? "s" : ""} de proyectos que se conservan`);
+      heroGone.forEach(x => names.push(`• una foto anterior del inicio (${x})`));
+      if (!confirm(`Estos elementos se eliminarán definitivamente:\n\n${names.join("\n")}\n\n¿Continuar?`)) return;
+    }
+
+    const text = serialize(work);
+    busy = true; updateSave(); say($("saveMsg"), "Guardando…");
+    try {
+      if (!delFolders.length && !delPaths.length && !uploads.length) {
+        const r = await gh("PUT", "contents/site.json", {
+          message: "Admin: actualización del sitio", content: b64enc(text), sha: saved.sha, branch: conn.branch
+        });
+        saved = { data: JSON.parse(text), sha: r.content.sha };
+      } else {
+        const parts = [];
+        if (photoUploads.length) parts.push(`adición de ${plural(photoUploads.length, "foto")}`);
+        else if (uploads.length) parts.push("adición de versiones ligeras");
+        if (delFolders.length) parts.push(`eliminación de ${plural(delFolders.length, "proyecto")}`);
+        if (removedPhotos.length) parts.push(`eliminación de ${plural(removedPhotos.length, "foto")}`);
+        await commitChanges({ text, delFolders, delPaths, uploads },
+          `Admin: actualización del sitio (${parts.join(", ") || "contenido"})`,
+          (i, n) => say($("saveMsg"), `Enviando los archivos… ${i}/${n}`));
+        saved = await fetchSite();
+      }
+      pending.clear(); pendingThumbs.clear();            // les aperçus locaux restent affichés jusqu'au rechargement
+      await refreshTree();
+      work = clone(saved.data); work.about = work.about || {};
+      busy = false; render();
+      say($("saveMsg"), "Guardado. Los cambios estarán en línea en aproximadamente un minuto.", "ok");
+    } catch (e) {
+      busy = false; say($("saveMsg"), e.message, "err");
+    }
+    busy = false; updateSave();
+  }
+
+  /* ---------- démarrage ---------- */
+  $("connect").addEventListener("click", connect);
+  $("logout").addEventListener("click", () => { if (isDirty() && !confirm("Hay cambios sin guardar. ¿Cerrar sesión de todos modos?")) return; logout(); });
+  $("save").addEventListener("click", save);
+  $("addCat").addEventListener("click", () => { if (addCategory($("newCat").value)) $("newCat").value = ""; else $("newCat").focus(); });
+  $("newCat").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $("addCat").click(); } });
+  window.addEventListener("beforeunload", e => { if (isDirty()) { e.preventDefault(); e.returnValue = ""; } });
+
+  try {
+    const c = JSON.parse(localStorage.getItem(CONN_KEY) || "null");
+    if (c) { $("owner").value = c.owner; $("repo").value = c.repo; $("branch").value = c.branch || "main"; }
+    const t = localStorage.getItem(TOKEN_KEY);
+    if (t) { $("token").value = t; $("remember").checked = true; if (c) connect(); }
+  } catch (e) { /* stockage indisponible : on continue sans */ }
+
+  if (window.__ADMIN_TEST__) window.__ADMIN_TEST__ = {
+    connect, save, addCategory, addProject, deleteProject, deleteCategory, moveProject,
+    addPhotos, removePhoto, setCover, replaceHero, optimizeHero, heroNeedsOptimizing, mediumOfPath, allProjects, slugify, sortableSource, sortableTarget,
+    setResize: f => { resizeImpl = f; }, generateThumbs, missingThumbs, thumbOfPath, getRepoFiles: () => repoFiles, getThumbs: () => pendingThumbs,
+    getWork: () => work, getSaved: () => saved, getPending: () => pending, isDirty, setDrag: d => { drag = d; }, getDrag: () => drag
+  };
+})();
+</script>
+</body>
+</html>
