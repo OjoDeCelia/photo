@@ -23,7 +23,7 @@
   "categories": [
     {
       "id": "retratos",
-      "label": "Retratos",
+      "label": "Territorio",
       "cover": "colecciones/20261011-163712-u96.jpg",
       "projects": [
         {
@@ -39,19 +39,19 @@
     },
     {
       "id": "calle",
-      "label": "Fotografía callejera",
+      "label": "Oficios",
       "cover": "",
       "projects": []
     },
     {
       "id": "coleccion-3",
-      "label": "Colección 3",
+      "label": "Viajes y experiencias",
       "cover": "",
       "projects": []
     },
     {
       "id": "coleccion-4",
-      "label": "Colección 4",
+      "label": "Productos",
       "cover": "",
       "projects": []
     }
