@@ -109,7 +109,7 @@
     {
       "id": "coleccion-4",
       "label": "Productos",
-      "cover": "colecciones/20261016-154247-ncp.jpg",
+      "cover": "colecciones/20261016-154610-tbn.jpg",
       "projects": [
         {
           "slug": "te-de-arca-tierra",
@@ -136,7 +136,10 @@
           "photos": ["20261016-152229-cl9.jpg", "20261016-152228-7z1.jpg", "20261016-152231-3i0.jpg", "20261016-152226-e3i.jpg", "20261016-152227-nlv.jpg", "20261016-152231-mw7.jpg", "20261016-152233-pgh.jpg"]
         }
       ],
-      "focus": "13% 0%"
+      "history": [
+        "colecciones/20261016-154247-ncp.jpg"
+      ],
+      "focus": "45% 43%"
     }
   ]
 }
