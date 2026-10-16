@@ -3,7 +3,7 @@
     "name": "Ojo de Celia"
   },
   "hero": {
-    "title": "Personas, lugares\ny momentos.",
+    "title": "A WAY OF SEEING.",
     "image": "head-photo/20261011-164352-9go.jpg",
     "crop": true,
     "focus": "50% 99%"
@@ -29,20 +29,28 @@
       "cover": "colecciones/20261011-163712-u96.jpg",
       "projects": [
         {
-          "slug": "coleccion-1",
-          "title": "Jato",
-          "description": "",
-          "folder": "retratos/coleccion-1",
-          "cover": "",
-          "photos": ["20261011-163707-tjv.jpg", "20261011-163707-791.jpg"]
-        },
-        {
           "slug": "ganaderia-regenerativa",
           "title": "Ganadería Regenerativa",
           "description": "",
           "folder": "retratos/ganaderia-regenerativa",
           "cover": "20261016-144947-eru.jpg",
           "photos": ["20261016-144941-3mv.jpg", "20261016-144942-mbf.jpg", "20261016-144943-q05.jpg", "20261016-144946-vdl.jpg", "20261016-144946-g85.jpg", "20261016-144946-u1m.jpg", "20261016-144946-sri.jpg", "20261016-144947-eru.jpg", "20261016-144947-2v4.jpg", "20261016-144947-5nc.jpg", "20261016-144948-p1o.jpg", "20261016-144948-sl7.jpg"]
+        },
+        {
+          "slug": "coleccion-1",
+          "title": "Jato",
+          "description": "",
+          "folder": "retratos/coleccion-1",
+          "cover": "",
+          "photos": ["20261016-150446-tql.jpg", "20261016-150447-5zu.jpg", "20261016-150448-eha.jpg", "20261016-150448-fs5.jpg", "20261016-150448-b9q.jpg", "20261016-150449-98l.jpg", "20261016-150449-ns1.jpg", "20261016-150449-64x.jpg", "20261016-150450-w3v.jpg", "20261016-150449-psi.jpg", "20261016-150449-8nx.jpg", "20261016-150450-r5y.jpg"]
+        },
+        {
+          "slug": "chinampas-xochimilcas",
+          "title": "Chinampas Xochimilcas",
+          "description": "",
+          "folder": "retratos/chinampas-xochimilcas",
+          "cover": "20261016-145608-6gy.jpg",
+          "photos": ["20261016-145613-bpg.jpg", "20261016-145614-znz.jpg", "20261016-145614-hft.jpg", "20261016-145613-5vt.jpg", "20261016-145615-pb8.jpg", "20261016-145615-zex.jpg", "20261016-145612-ytr.jpg", "20261016-145604-f8l.jpg", "20261016-145606-kud.jpg", "20261016-145605-5p5.jpg", "20261016-145608-6gy.jpg", "20261016-145609-i48.jpg", "20261016-145609-dzm.jpg", "20261016-145615-84o.jpg", "20261016-145610-kcq.jpg", "20261016-145616-oyw.jpg", "20261016-145616-cjj.jpg", "20261016-145611-ydm.jpg", "20261016-145610-ysn.jpg", "20261016-145611-mij.jpg", "20261016-145612-35l.jpg", "20261016-145617-cm0.jpg", "20261016-145618-h3v.jpg", "20261016-145617-abv.jpg", "20261016-145617-cyu.jpg", "20261016-145618-t7s.jpg", "20261016-145610-pxb.jpg"]
         }
       ],
       "focus": "19% 53%"
@@ -51,19 +59,78 @@
       "id": "calle",
       "label": "Oficios",
       "cover": "",
-      "projects": []
+      "projects": [
+        {
+          "slug": "ceramica-experimental-con-manu",
+          "title": "Cerámica experimental con Manu",
+          "description": "",
+          "folder": "calle/ceramica-experimental-con-manu",
+          "cover": "20261016-150941-veo.jpg",
+          "photos": ["20261016-150937-h8e.jpg", "20261016-150937-k3f.jpg", "20261016-150938-8yi.jpg", "20261016-150939-511.jpg", "20261016-150941-veo.jpg"]
+        },
+        {
+          "slug": "tatuajes-con-katrina",
+          "title": "Tatuajes con Katrina",
+          "description": "",
+          "folder": "calle/tatuajes-con-katrina",
+          "cover": "",
+          "photos": ["20261016-151148-3q4.jpg", "20261016-151149-1yd.jpg", "20261016-151149-sas.jpg", "20261016-151149-3t1.jpg", "20261016-151150-u0n.jpg", "20261016-151151-x5x.jpg", "20261016-151151-aom.jpg", "20261016-151151-q3u.jpg"]
+        }
+      ]
     },
     {
       "id": "coleccion-3",
       "label": "Viajes y experiencias",
       "cover": "",
-      "projects": []
+      "projects": [
+        {
+          "slug": "viaje-en-globo",
+          "title": "Viaje en Globo",
+          "description": "",
+          "folder": "coleccion-3/viaje-en-globo",
+          "cover": "20261016-151403-hid.jpg",
+          "photos": ["20261016-151358-zcf.jpg", "20261016-151359-xbg.jpg", "20261016-151400-7lm.jpg", "20261016-151403-m62.jpg", "20261016-151403-hid.jpg", "20261016-151403-4av.jpg", "20261016-151404-ft6.jpg", "20261016-151404-9gl.jpg", "20261016-151405-pov.jpg", "20261016-151405-73k.jpg", "20261016-151405-0on.jpg", "20261016-151406-w6h.jpg"]
+        },
+        {
+          "slug": "a-caballo-por-cocoloba",
+          "title": "A caballo por Cocoloba",
+          "description": "",
+          "folder": "coleccion-3/a-caballo-por-cocoloba",
+          "cover": "20261016-151713-oyd.jpg",
+          "photos": ["20261016-151711-1w1.jpg", "20261016-151712-xic.jpg", "20261016-151712-087.jpg", "20261016-151714-8pk.jpg", "20261016-151712-si3.jpg", "20261016-151714-mwf.jpg", "20261016-151715-5ro.jpg", "20261016-151715-ncd.jpg", "20261016-151713-oyd.jpg", "20261016-151713-prf.jpg"]
+        }
+      ]
     },
     {
       "id": "coleccion-4",
       "label": "Productos",
       "cover": "",
-      "projects": []
+      "projects": [
+        {
+          "slug": "te-de-arca-tierra",
+          "title": "Té de Arca Tierra",
+          "description": "",
+          "folder": "coleccion-4/te-de-arca-tierra",
+          "cover": "20261016-152021-a3l.jpg",
+          "photos": ["20261016-152019-4db.jpg", "20261016-152019-xnf.jpg", "20261016-152019-udc.jpg", "20261016-152020-ccs.jpg", "20261016-152021-m4f.jpg", "20261016-152021-a3l.jpg"]
+        },
+        {
+          "slug": "mijina-de-extremadura",
+          "title": "Mijina de Extremadura",
+          "description": "",
+          "folder": "coleccion-4/mijina-de-extremadura",
+          "cover": "20261016-151906-xpk.jpg",
+          "photos": ["20261016-151902-xxo.jpg", "20261016-151902-grk.jpg", "20261016-151902-5vo.jpg", "20261016-151902-sqj.jpg", "20261016-151904-vcn.jpg", "20261016-151906-xpk.jpg"]
+        },
+        {
+          "slug": "joyas-camara-de-comercio",
+          "title": "Joyas - Cámara de Comercio",
+          "description": "",
+          "folder": "coleccion-4/joyas-camara-de-comercio",
+          "cover": "",
+          "photos": ["20261016-152229-cl9.jpg", "20261016-152228-7z1.jpg", "20261016-152231-3i0.jpg", "20261016-152226-e3i.jpg", "20261016-152227-nlv.jpg", "20261016-152231-mw7.jpg", "20261016-152233-pgh.jpg"]
+        }
+      ]
     }
   ]
 }
