@@ -35,6 +35,14 @@
           "folder": "retratos/coleccion-1",
           "cover": "",
           "photos": ["20261011-163707-tjv.jpg", "20261011-163707-791.jpg"]
+        },
+        {
+          "slug": "ganaderia-regenerativa",
+          "title": "Ganadería Regenerativa",
+          "description": "",
+          "folder": "retratos/ganaderia-regenerativa",
+          "cover": "20261016-144947-eru.jpg",
+          "photos": ["20261016-144941-3mv.jpg", "20261016-144942-mbf.jpg", "20261016-144943-q05.jpg", "20261016-144946-vdl.jpg", "20261016-144946-g85.jpg", "20261016-144946-u1m.jpg", "20261016-144946-sri.jpg", "20261016-144947-eru.jpg", "20261016-144947-2v4.jpg", "20261016-144947-5nc.jpg", "20261016-144948-p1o.jpg", "20261016-144948-sl7.jpg"]
         }
       ],
       "focus": "19% 53%"
