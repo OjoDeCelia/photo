@@ -26,7 +26,7 @@
     {
       "id": "retratos",
       "label": "Territorio",
-      "cover": "colecciones/20261011-163712-u96.jpg",
+      "cover": "colecciones/20261016-153941-145.jpg",
       "projects": [
         {
           "slug": "ganaderia-regenerativa",
@@ -53,12 +53,15 @@
           "photos": ["20261016-145613-bpg.jpg", "20261016-145614-znz.jpg", "20261016-145614-hft.jpg", "20261016-145613-5vt.jpg", "20261016-145615-pb8.jpg", "20261016-145615-zex.jpg", "20261016-145612-ytr.jpg", "20261016-145604-f8l.jpg", "20261016-145606-kud.jpg", "20261016-145605-5p5.jpg", "20261016-145608-6gy.jpg", "20261016-145609-i48.jpg", "20261016-145609-dzm.jpg", "20261016-145615-84o.jpg", "20261016-145610-kcq.jpg", "20261016-145616-oyw.jpg", "20261016-145616-cjj.jpg", "20261016-145611-ydm.jpg", "20261016-145610-ysn.jpg", "20261016-145611-mij.jpg", "20261016-145612-35l.jpg", "20261016-145617-cm0.jpg", "20261016-145618-h3v.jpg", "20261016-145617-abv.jpg", "20261016-145617-cyu.jpg", "20261016-145618-t7s.jpg", "20261016-145610-pxb.jpg"]
         }
       ],
-      "focus": "19% 53%"
+      "history": [
+        "colecciones/20261011-163712-u96.jpg"
+      ],
+      "focus": "75% 48%"
     },
     {
       "id": "calle",
       "label": "Oficios",
-      "cover": "",
+      "cover": "colecciones/20261016-154112-jvm.jpg",
       "projects": [
         {
           "slug": "ceramica-experimental-con-manu",
@@ -76,12 +79,13 @@
           "cover": "",
           "photos": ["20261016-151148-3q4.jpg", "20261016-151149-1yd.jpg", "20261016-151149-sas.jpg", "20261016-151149-3t1.jpg", "20261016-151150-u0n.jpg", "20261016-151151-x5x.jpg", "20261016-151151-aom.jpg", "20261016-151151-q3u.jpg"]
         }
-      ]
+      ],
+      "focus": "56% 51%"
     },
     {
       "id": "coleccion-3",
       "label": "Viajes y experiencias",
-      "cover": "",
+      "cover": "colecciones/20261016-154211-psj.jpg",
       "projects": [
         {
           "slug": "viaje-en-globo",
@@ -99,12 +103,13 @@
           "cover": "20261016-151713-oyd.jpg",
           "photos": ["20261016-151711-1w1.jpg", "20261016-151712-xic.jpg", "20261016-151712-087.jpg", "20261016-151714-8pk.jpg", "20261016-151712-si3.jpg", "20261016-151714-mwf.jpg", "20261016-151715-5ro.jpg", "20261016-151715-ncd.jpg", "20261016-151713-oyd.jpg", "20261016-151713-prf.jpg"]
         }
-      ]
+      ],
+      "focus": "59% 50%"
     },
     {
       "id": "coleccion-4",
       "label": "Productos",
-      "cover": "",
+      "cover": "colecciones/20261016-154247-ncp.jpg",
       "projects": [
         {
           "slug": "te-de-arca-tierra",
@@ -130,7 +135,8 @@
           "cover": "",
           "photos": ["20261016-152229-cl9.jpg", "20261016-152228-7z1.jpg", "20261016-152231-3i0.jpg", "20261016-152226-e3i.jpg", "20261016-152227-nlv.jpg", "20261016-152231-mw7.jpg", "20261016-152233-pgh.jpg"]
         }
-      ]
+      ],
+      "focus": "13% 0%"
     }
   ]
 }
